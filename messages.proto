@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+
+
+// the message exchange service definition.
+service ModelExchange {
+  rpc RegisterNode (NodeRequest) returns (NodeResponse) {}
+  rpc DeregisterNode (NodeRequest) returns (NodeResponse) {}
+
+  rpc PingLeader (NetworkRequest) returns (NetworkResponse) {}
+
+  rpc ShareModelWeights (ModelRequest) returns (ModelResponse) {}
+}
+
+message ModelWeight {
+  string name = 1;
+  int32 value = 2;
+}
+
+message NodeRequest {
+  string ip_addr = 1;
+  int32 port = 2;
+}
+
+message NodeResponse {
+  int32 response_code = 1;
+  string leader_ip_addr = 2;
+  int32 leader_port = 3;
+  optional string error = 4;
+}
+
+message NetworkRequest {
+  string ip_addr = 1;
+  int32 port = 2;
+}
+
+message NetworkResponse {
+  int32 response_code = 1;
+  int32 model_version = 2;
+}
+
+message ModelRequest {
+  int32 request_type = 1;
+  repeated ModelWeight modelWeights = 2;
+}
+
+message ModelResponse {
+}

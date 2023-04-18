@@ -1,0 +1,2 @@
+LEADER_HOST = 'localhost'
+LEADER_PORT = 6136

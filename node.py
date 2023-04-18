@@ -1,4 +1,5 @@
 from concurrent import futures
+import random
 import _thread
 import time
 import sys
@@ -12,6 +13,8 @@ import signal
 
 class ModelExchange(pb2_grpc.ModelExchange):
     def __init__(self, ip_addr, port):
+        random.seed()
+
         self.nodes = []
         self.ip_addr = ip_addr
         self.port = port
@@ -68,7 +71,7 @@ class Node():
     def set_defaults(self):
         print("Node set_defaults")
         self.ip_addr = 'localhost'
-        self.port = 6188
+        self.port = 6188 + random.randint(0, 100)
         self.is_leader = False
         self.leader_host = config.LEADER_HOST
         self.leader_port = config.LEADER_PORT

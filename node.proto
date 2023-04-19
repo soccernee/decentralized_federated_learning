@@ -1,14 +1,13 @@
 syntax = "proto3";
 
 /*
-* NodeExchange: the message exchange service definition for the nodes to connect with the leader
+* NodeExchange: the message exchange service definition for the nodes to connect with the leader.
 * These functions are receieved by the Leader.
 */
 service NodeExchange {
   rpc RegisterNode (NodeRequest) returns (NodeResponse) {}
   rpc DeregisterNode (NodeRequest) returns (NodeResponse) {}
 
-  rpc PingLeader (NetworkRequest) returns (NetworkResponse) {}
   rpc ShareModelWeights (ModelRequest) returns (ModelResponse) {}
 }
 
@@ -29,17 +28,6 @@ message NodeResponse {
   string leader_ip_addr = 3;
   int32 leader_port = 4;
   optional string error = 5;
-}
-
-message NetworkRequest {
-  string ip_addr = 1;
-  int32 port = 2;
-}
-
-message NetworkResponse {
-  int32 response_code = 1;
-  int32 model_version = 2;
-  repeated NodeRequest nodes = 3;
 }
 
 message ModelRequest {

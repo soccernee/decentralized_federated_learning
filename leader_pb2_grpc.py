@@ -8,7 +8,7 @@ import node_pb2 as node__pb2
 
 class LeaderExchangeStub(object):
     """
-    LeaderExchagne: the message exchange service definition for the leader to connect with the nodes
+    LeaderExchange: the message exchange service definition for the leader to connect with the nodes.
     These functions are received by the Nodes themselves.
     """
 
@@ -32,7 +32,7 @@ class LeaderExchangeStub(object):
 
 class LeaderExchangeServicer(object):
     """
-    LeaderExchagne: the message exchange service definition for the leader to connect with the nodes
+    LeaderExchange: the message exchange service definition for the leader to connect with the nodes.
     These functions are received by the Nodes themselves.
     """
 
@@ -70,7 +70,7 @@ def add_LeaderExchangeServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class LeaderExchange(object):
     """
-    LeaderExchagne: the message exchange service definition for the leader to connect with the nodes
+    LeaderExchange: the message exchange service definition for the leader to connect with the nodes.
     These functions are received by the Nodes themselves.
     """
 

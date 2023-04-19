@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nnode.proto\"*\n\x0bModelWeight\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05\"=\n\x0bNodeRequest\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x0f\n\x07ip_addr\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\x83\x01\n\x0cNodeResponse\x12\x15\n\rresponse_code\x18\x01 \x01(\x05\x12\x11\n\tleader_id\x18\x02 \x01(\t\x12\x16\n\x0eleader_ip_addr\x18\x03 \x01(\t\x12\x13\n\x0bleader_port\x18\x04 \x01(\x05\x12\x12\n\x05\x65rror\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error\"/\n\x0eNetworkRequest\x12\x0f\n\x07ip_addr\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\\\n\x0fNetworkResponse\x12\x15\n\rresponse_code\x18\x01 \x01(\x05\x12\x15\n\rmodel_version\x18\x02 \x01(\x05\x12\x1b\n\x05nodes\x18\x03 \x03(\x0b\x32\x0c.NodeRequest\"H\n\x0cModelRequest\x12\x14\n\x0crequest_type\x18\x01 \x01(\x05\x12\"\n\x0cmodelWeights\x18\x02 \x03(\x0b\x32\x0c.ModelWeight\"\x0f\n\rModelResponse2\xd7\x01\n\x0cNodeExchange\x12-\n\x0cRegisterNode\x12\x0c.NodeRequest\x1a\r.NodeResponse\"\x00\x12/\n\x0e\x44\x65registerNode\x12\x0c.NodeRequest\x1a\r.NodeResponse\"\x00\x12\x31\n\nPingLeader\x12\x0f.NetworkRequest\x1a\x10.NetworkResponse\"\x00\x12\x34\n\x11ShareModelWeights\x12\r.ModelRequest\x1a\x0e.ModelResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nnode.proto\"*\n\x0bModelWeight\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05\"=\n\x0bNodeRequest\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x0f\n\x07ip_addr\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\x83\x01\n\x0cNodeResponse\x12\x15\n\rresponse_code\x18\x01 \x01(\x05\x12\x11\n\tleader_id\x18\x02 \x01(\t\x12\x16\n\x0eleader_ip_addr\x18\x03 \x01(\t\x12\x13\n\x0bleader_port\x18\x04 \x01(\x05\x12\x12\n\x05\x65rror\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error\"H\n\x0cModelRequest\x12\x14\n\x0crequest_type\x18\x01 \x01(\x05\x12\"\n\x0cmodelWeights\x18\x02 \x03(\x0b\x32\x0c.ModelWeight\"\x0f\n\rModelResponse2\xa4\x01\n\x0cNodeExchange\x12-\n\x0cRegisterNode\x12\x0c.NodeRequest\x1a\r.NodeResponse\"\x00\x12/\n\x0e\x44\x65registerNode\x12\x0c.NodeRequest\x1a\r.NodeResponse\"\x00\x12\x34\n\x11ShareModelWeights\x12\r.ModelRequest\x1a\x0e.ModelResponse\"\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'node_pb2', globals())
@@ -26,14 +26,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _NODEREQUEST._serialized_end=119
   _NODERESPONSE._serialized_start=122
   _NODERESPONSE._serialized_end=253
-  _NETWORKREQUEST._serialized_start=255
-  _NETWORKREQUEST._serialized_end=302
-  _NETWORKRESPONSE._serialized_start=304
-  _NETWORKRESPONSE._serialized_end=396
-  _MODELREQUEST._serialized_start=398
-  _MODELREQUEST._serialized_end=470
-  _MODELRESPONSE._serialized_start=472
-  _MODELRESPONSE._serialized_end=487
-  _NODEEXCHANGE._serialized_start=490
-  _NODEEXCHANGE._serialized_end=705
+  _MODELREQUEST._serialized_start=255
+  _MODELREQUEST._serialized_end=327
+  _MODELRESPONSE._serialized_start=329
+  _MODELRESPONSE._serialized_end=344
+  _NODEEXCHANGE._serialized_start=347
+  _NODEEXCHANGE._serialized_end=511
 # @@protoc_insertion_point(module_scope)

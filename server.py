@@ -4,9 +4,8 @@ import node_pb2
 import node_pb2_grpc
 
 #
-# This class is the receiving portion of the Node.
-# For simplicity, we moved it into its own file to 
-# avoid cluttering node.py
+# This class is the receiving portion of the Node (the "server" in client-server lingo).
+# For simplicity, we moved it into its own file to avoid cluttering node.py
 #
 
 class LeaderExchange(leader_pb2_grpc.LeaderExchange):
@@ -59,15 +58,5 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         print("active_nodes = ", self.active_nodes.get_ids())
 
         response = node_pb2.NodeResponse(response_code=200,leader_ip_addr=self.ip_addr,leader_port=self.port)
-        return response
-
-    def PingLeader(self, request, context):
-        print("Ping Leader!")
-
-        response = node_pb2.NetworkResponse(
-            response_code=200,
-            model_version=self.model_version,
-            nodes=self.active_nodes.values()
-        )
         return response
     

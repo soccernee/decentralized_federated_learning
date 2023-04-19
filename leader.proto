@@ -3,7 +3,7 @@ syntax = "proto3";
 import "node.proto";
 
 /* 
-* LeaderExchagne: the message exchange service definition for the leader to connect with the nodes
+* LeaderExchange: the message exchange service definition for the leader to connect with the nodes.
 * These functions are received by the Nodes themselves.
 */
 service LeaderExchange {

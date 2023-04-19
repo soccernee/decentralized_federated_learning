@@ -7,7 +7,7 @@ import node_pb2 as node__pb2
 
 class NodeExchangeStub(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
     These functions are receieved by the Leader.
     """
 
@@ -27,11 +27,6 @@ class NodeExchangeStub(object):
                 request_serializer=node__pb2.NodeRequest.SerializeToString,
                 response_deserializer=node__pb2.NodeResponse.FromString,
                 )
-        self.PingLeader = channel.unary_unary(
-                '/NodeExchange/PingLeader',
-                request_serializer=node__pb2.NetworkRequest.SerializeToString,
-                response_deserializer=node__pb2.NetworkResponse.FromString,
-                )
         self.ShareModelWeights = channel.unary_unary(
                 '/NodeExchange/ShareModelWeights',
                 request_serializer=node__pb2.ModelRequest.SerializeToString,
@@ -41,7 +36,7 @@ class NodeExchangeStub(object):
 
 class NodeExchangeServicer(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
     These functions are receieved by the Leader.
     """
 
@@ -52,12 +47,6 @@ class NodeExchangeServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeregisterNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def PingLeader(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -82,11 +71,6 @@ def add_NodeExchangeServicer_to_server(servicer, server):
                     request_deserializer=node__pb2.NodeRequest.FromString,
                     response_serializer=node__pb2.NodeResponse.SerializeToString,
             ),
-            'PingLeader': grpc.unary_unary_rpc_method_handler(
-                    servicer.PingLeader,
-                    request_deserializer=node__pb2.NetworkRequest.FromString,
-                    response_serializer=node__pb2.NetworkResponse.SerializeToString,
-            ),
             'ShareModelWeights': grpc.unary_unary_rpc_method_handler(
                     servicer.ShareModelWeights,
                     request_deserializer=node__pb2.ModelRequest.FromString,
@@ -101,7 +85,7 @@ def add_NodeExchangeServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class NodeExchange(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
     These functions are receieved by the Leader.
     """
 
@@ -136,23 +120,6 @@ class NodeExchange(object):
         return grpc.experimental.unary_unary(request, target, '/NodeExchange/DeregisterNode',
             node__pb2.NodeRequest.SerializeToString,
             node__pb2.NodeResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def PingLeader(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/NodeExchange/PingLeader',
-            node__pb2.NetworkRequest.SerializeToString,
-            node__pb2.NetworkResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

@@ -6,7 +6,9 @@ import node_pb2 as node__pb2
 
 
 class NodeExchangeStub(object):
-    """the message exchange service definition for the nodes to connect with the leader
+    """
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    These functions are receieved by the Leader.
     """
 
     def __init__(self, channel):
@@ -38,7 +40,9 @@ class NodeExchangeStub(object):
 
 
 class NodeExchangeServicer(object):
-    """the message exchange service definition for the nodes to connect with the leader
+    """
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    These functions are receieved by the Leader.
     """
 
     def RegisterNode(self, request, context):
@@ -96,7 +100,9 @@ def add_NodeExchangeServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class NodeExchange(object):
-    """the message exchange service definition for the nodes to connect with the leader
+    """
+    NodeExchange: the message exchange service definition for the nodes to connect with the leader
+    These functions are receieved by the Leader.
     """
 
     @staticmethod

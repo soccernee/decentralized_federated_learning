@@ -1,10 +1,21 @@
 
 syntax = "proto3";
+import "node.proto";
 
-// the message exchange service definition for the leader to connect with the nodes
+/* 
+* LeaderExchagne: the message exchange service definition for the leader to connect with the nodes
+* These functions are received by the Nodes themselves.
+*/
 service LeaderExchange {
-  rpc Heartbeat (NetworkRequest) returns (NetworkResponse) {}
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse) {}
 
   rpc DistributeModelWeights (ModelRequest) returns (ModelResponse) {}
 }
-  
+
+message HeartbeatRequest {
+  repeated NodeRequest nodes = 1;
+}
+
+message HeartbeatResponse {
+  bool received = 1;
+}

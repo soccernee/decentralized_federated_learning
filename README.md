@@ -2,7 +2,18 @@
 
 Final Project for CS262: Distributed Systems, by @soccernee and @balt2.
 
-This is a project to demonstrate the principles of distributed computing. We are building a decentralized federated learning network, allowing anyone to connect to the network and share in the distributed machine learning network. The main idea of federated learning is that the data never leaves the individual node, just the updated model weights.
+This is a project to demonstrate the principles of distributed computing. We are building a centralized federated learning network, allowing anyone to connect to the network and share in the distributed machine learning network. The main idea of federated learning is that the data never leaves the individual node, just the updated model weights.
+
+## To-Do-List
+
+[x] Nodes connect to Leader
+[x] Leader connects to all (other) nodes
+[x] Leader maintains list of active nodes
+[x] Leader sends heartbeat to nodes (which includes active list of nodes)
+[] Leader election if leader goes down
+[] Base ML training per node
+[] Nodes send updated model weights to Leader
+[] Leader aggregates weights and pushes update to all nodes
 
 
 ## Setup
@@ -27,6 +38,7 @@ For any other node, run: `python node.py`
 
 ## Testing
 
+TODO
 
 ## Next Steps
 

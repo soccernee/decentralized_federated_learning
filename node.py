@@ -1,55 +1,31 @@
 from concurrent import futures
+import grpc
 import random
 import _thread
 import time
+import signal
 import sys
+import uuid
 
 import config
-import grpc
-import messages_pb2 as pb2
-import messages_pb2_grpc as pb2_grpc
-import signal
+import node_pb2 as pb2
+import node_pb2_grpc as pb2_grpc
 
-
-class ModelExchange(pb2_grpc.ModelExchange):
-    def __init__(self, ip_addr, port):
-        random.seed()
-
-        self.nodes = []
-        self.ip_addr = ip_addr
-        self.port = port
-
-    def RegisterNode(self, request, context):
-        print("Register Node!")
-        
-        node_ip_addr = request.ip_addr
-        node_port = request.port
-
-        self.nodes.append({
-            'ip_addr': node_ip_addr,
-            'port': node_port,
-        })
-        print("nodes = ", self.nodes)
-
-        response = pb2.NodeResponse(response_code=200,leader_ip_addr=self.ip_addr,leader_port=self.port)
-        return response
-
-    def PingLeader(self, request, context):
-        print("Ping Leader!")
-
-        response = pb2.NetworkResponse(response_code=200, model_version=3)
-        return response
+from server import NodeExchange
 
 class Node():
     def __init__(self):
+        random.seed()
+
         self.is_leader = False
+        self.id = str(uuid.uuid4())
 
         if len(sys.argv) > 1:
             data = str(sys.argv[1])
             if data == "leader":
                 self.is_leader = True
 
-        #Logic to handle SIGINT
+        # Logic to handle SIGINT
         self.SIGINT = False
         signal.signal(signal.SIGINT, self.signal_handler)
 
@@ -65,12 +41,11 @@ class Node():
 
         self.main()
 
-    def is_leader(self):
-        return False
-
     def set_defaults(self):
-        print("Node set_defaults")
-        self.ip_addr = 'localhost'
+        ip_addr = 'localhost'
+        print("ip_addr = ", ip_addr)
+
+        self.ip_addr = ip_addr 
         self.port = 6188 + random.randint(0, 100)
         self.is_leader = False
         self.leader_host = config.LEADER_HOST
@@ -81,7 +56,7 @@ class Node():
         str_port = str(self.port)
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        pb2_grpc.add_ModelExchangeServicer_to_server(ModelExchange(self.ip_addr, self.port), server)
+        pb2_grpc.add_NodeExchangeServicer_to_server(NodeExchange(self.id, self.ip_addr, self.port), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Server started, listening on " + str_port)
@@ -93,16 +68,21 @@ class Node():
         self.channel = grpc.insecure_channel(
             '{}:{}'.format(self.leader_host, self.leader_port))
         
-        self.leader_stub = pb2_grpc.ModelExchangeStub(self.channel)
+        self.leader_stub = pb2_grpc.NodeExchangeStub(self.channel)
 
     def register(self):
         print("register")
-        response = self.leader_stub.RegisterNode(pb2.NodeRequest(ip_addr=self.ip_addr, port=self.port))
+        print("id = ", self.id)
+        response = self.leader_stub.RegisterNode(pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
         print(response)
         if response.response_code == 200:
             _thread.start_new_thread(self.start_leader_polling, ())
         elif response.response_code == 404:
             print("Error : ", response.response_text)
+
+    def deregister(self):
+        print("deregister")
+        self.leader_stub.DeregisterNode(pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
 
     def start_leader_polling(self):
         while True:
@@ -116,13 +96,15 @@ class Node():
         response = self.leader_stub.PingLeader(pb2.NetworkRequest(ip_addr=self.ip_addr, port=self.port))
         if response.response_code == 200:
             print("Ping Leader Response: ", response)
+        else:
+            pass
         return response
     
     def should_retrain_model(self):
         return False
     
     def end_session(self):
-        pass
+        self.deregister()
 
     def signal_handler(self, signal, frame):
         print('You quit the program!')

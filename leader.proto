@@ -1,0 +1,10 @@
+
+syntax = "proto3";
+
+// the message exchange service definition for the leader to connect with the nodes
+service LeaderExchange {
+  rpc Heartbeat (NetworkRequest) returns (NetworkResponse) {}
+
+  rpc DistributeModelWeights (ModelRequest) returns (ModelResponse) {}
+}
+  

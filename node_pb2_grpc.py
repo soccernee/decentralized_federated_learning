@@ -2,11 +2,11 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import messages_pb2 as messages__pb2
+import node_pb2 as node__pb2
 
 
-class ModelExchangeStub(object):
-    """the message exchange service definition.
+class NodeExchangeStub(object):
+    """the message exchange service definition for the nodes to connect with the leader
     """
 
     def __init__(self, channel):
@@ -16,29 +16,29 @@ class ModelExchangeStub(object):
             channel: A grpc.Channel.
         """
         self.RegisterNode = channel.unary_unary(
-                '/ModelExchange/RegisterNode',
-                request_serializer=messages__pb2.NodeRequest.SerializeToString,
-                response_deserializer=messages__pb2.NodeResponse.FromString,
+                '/NodeExchange/RegisterNode',
+                request_serializer=node__pb2.NodeRequest.SerializeToString,
+                response_deserializer=node__pb2.NodeResponse.FromString,
                 )
         self.DeregisterNode = channel.unary_unary(
-                '/ModelExchange/DeregisterNode',
-                request_serializer=messages__pb2.NodeRequest.SerializeToString,
-                response_deserializer=messages__pb2.NodeResponse.FromString,
+                '/NodeExchange/DeregisterNode',
+                request_serializer=node__pb2.NodeRequest.SerializeToString,
+                response_deserializer=node__pb2.NodeResponse.FromString,
                 )
         self.PingLeader = channel.unary_unary(
-                '/ModelExchange/PingLeader',
-                request_serializer=messages__pb2.NetworkRequest.SerializeToString,
-                response_deserializer=messages__pb2.NetworkResponse.FromString,
+                '/NodeExchange/PingLeader',
+                request_serializer=node__pb2.NetworkRequest.SerializeToString,
+                response_deserializer=node__pb2.NetworkResponse.FromString,
                 )
         self.ShareModelWeights = channel.unary_unary(
-                '/ModelExchange/ShareModelWeights',
-                request_serializer=messages__pb2.ModelRequest.SerializeToString,
-                response_deserializer=messages__pb2.ModelResponse.FromString,
+                '/NodeExchange/ShareModelWeights',
+                request_serializer=node__pb2.ModelRequest.SerializeToString,
+                response_deserializer=node__pb2.ModelResponse.FromString,
                 )
 
 
-class ModelExchangeServicer(object):
-    """the message exchange service definition.
+class NodeExchangeServicer(object):
+    """the message exchange service definition for the nodes to connect with the leader
     """
 
     def RegisterNode(self, request, context):
@@ -66,37 +66,37 @@ class ModelExchangeServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_ModelExchangeServicer_to_server(servicer, server):
+def add_NodeExchangeServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'RegisterNode': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterNode,
-                    request_deserializer=messages__pb2.NodeRequest.FromString,
-                    response_serializer=messages__pb2.NodeResponse.SerializeToString,
+                    request_deserializer=node__pb2.NodeRequest.FromString,
+                    response_serializer=node__pb2.NodeResponse.SerializeToString,
             ),
             'DeregisterNode': grpc.unary_unary_rpc_method_handler(
                     servicer.DeregisterNode,
-                    request_deserializer=messages__pb2.NodeRequest.FromString,
-                    response_serializer=messages__pb2.NodeResponse.SerializeToString,
+                    request_deserializer=node__pb2.NodeRequest.FromString,
+                    response_serializer=node__pb2.NodeResponse.SerializeToString,
             ),
             'PingLeader': grpc.unary_unary_rpc_method_handler(
                     servicer.PingLeader,
-                    request_deserializer=messages__pb2.NetworkRequest.FromString,
-                    response_serializer=messages__pb2.NetworkResponse.SerializeToString,
+                    request_deserializer=node__pb2.NetworkRequest.FromString,
+                    response_serializer=node__pb2.NetworkResponse.SerializeToString,
             ),
             'ShareModelWeights': grpc.unary_unary_rpc_method_handler(
                     servicer.ShareModelWeights,
-                    request_deserializer=messages__pb2.ModelRequest.FromString,
-                    response_serializer=messages__pb2.ModelResponse.SerializeToString,
+                    request_deserializer=node__pb2.ModelRequest.FromString,
+                    response_serializer=node__pb2.ModelResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'ModelExchange', rpc_method_handlers)
+            'NodeExchange', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class ModelExchange(object):
-    """the message exchange service definition.
+class NodeExchange(object):
+    """the message exchange service definition for the nodes to connect with the leader
     """
 
     @staticmethod
@@ -110,9 +110,9 @@ class ModelExchange(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ModelExchange/RegisterNode',
-            messages__pb2.NodeRequest.SerializeToString,
-            messages__pb2.NodeResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/RegisterNode',
+            node__pb2.NodeRequest.SerializeToString,
+            node__pb2.NodeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -127,9 +127,9 @@ class ModelExchange(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ModelExchange/DeregisterNode',
-            messages__pb2.NodeRequest.SerializeToString,
-            messages__pb2.NodeResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/DeregisterNode',
+            node__pb2.NodeRequest.SerializeToString,
+            node__pb2.NodeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -144,9 +144,9 @@ class ModelExchange(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ModelExchange/PingLeader',
-            messages__pb2.NetworkRequest.SerializeToString,
-            messages__pb2.NetworkResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/PingLeader',
+            node__pb2.NetworkRequest.SerializeToString,
+            node__pb2.NetworkResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -161,8 +161,8 @@ class ModelExchange(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ModelExchange/ShareModelWeights',
-            messages__pb2.ModelRequest.SerializeToString,
-            messages__pb2.ModelResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/ShareModelWeights',
+            node__pb2.ModelRequest.SerializeToString,
+            node__pb2.ModelResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

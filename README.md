@@ -9,11 +9,15 @@ This is a project to demonstrate the principles of distributed computing. We are
 
 ### Compiling for gRPC
 
-These steps only need to occur after developmental changes. If you just cloned the repo and pulled down the latest you should not need to complete this step. However, if you make any changes to `messages.proto`, you'll need to recompile by performing this step. 
+These steps only need to occur after developmental changes. If you just cloned the repo and pulled down the latest you should not need to complete this step. However, if you make any changes to `node.proto`, you'll need to recompile by performing this step. Same for `leader.proto`
 
-Run this command from the root directory: `python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. messages.proto`
+1. Run this command from the root directory: `python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto`
 
-This will automatically update the `messages_pb2.py` and `messages_pb2_grpc.py` files for you (or generate them if they don't exist).
+This will automatically update the `node_pb2.py` and `node_pb2_grpc.py` files for you (or generate them if they don't exist).
+
+2. Run this command from the root directory: `python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. leader.proto`
+
+This will automatically update the `leader_pb2.py` and `leader_pb2_grpc.py` files for you (or generate them if they don't exist).
 
 
 ## Deployment

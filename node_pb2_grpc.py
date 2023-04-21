@@ -7,8 +7,7 @@ import node_pb2 as node__pb2
 
 class NodeExchangeStub(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
-    These functions are receieved by the Leader.
+    NodeExchange: the message exchange service definition for the nodes to connect to the network
     """
 
     def __init__(self, channel):
@@ -46,12 +45,12 @@ class NodeExchangeStub(object):
 
 class NodeExchangeServicer(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
-    These functions are receieved by the Leader.
+    NodeExchange: the message exchange service definition for the nodes to connect to the network
     """
 
     def RegisterNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """actions from the node to the leader
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -118,8 +117,7 @@ def add_NodeExchangeServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class NodeExchange(object):
     """
-    NodeExchange: the message exchange service definition for the nodes to connect with the leader.
-    These functions are receieved by the Leader.
+    NodeExchange: the message exchange service definition for the nodes to connect to the network
     """
 
     @staticmethod

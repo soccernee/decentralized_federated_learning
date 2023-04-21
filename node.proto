@@ -44,7 +44,8 @@ message ModelResponse {
 }
 
 message HeartbeatRequest {
-  repeated NodeRequest nodes = 1;
+  int32 active_nodes_version = 1;
+  repeated NodeRequest nodes = 2;
 }
 
 message HeartbeatResponse {

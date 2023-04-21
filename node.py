@@ -13,6 +13,7 @@ import node_pb2_grpc
 
 from server import NodeExchange 
 from active_nodes import ActiveNodes
+from heartbeat_timer import HeartbeatTimer
 
 class Node():
     #
@@ -24,8 +25,10 @@ class Node():
 
         self.is_leader = False
         self.id = str(uuid.uuid4())
+        self.leader_stub = None
         self.stubs = {}
         self.active_nodes = ActiveNodes()
+        self.heartbeat_timer = HeartbeatTimer(self.heartbeat_expired)
 
         if len(sys.argv) > 1:
             data = str(sys.argv[1])
@@ -66,7 +69,7 @@ class Node():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
-            NodeExchange(self.id, self.ip_addr, self.port, self.active_nodes), server)
+            NodeExchange(self.id, self.ip_addr, self.port, self.active_nodes, self.heartbeat_timer), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")
@@ -82,31 +85,25 @@ class Node():
         channel = grpc.insecure_channel(
             '{}:{}'.format(self.leader_host, self.leader_port))
         
-        self.node_stub = node_pb2_grpc.NodeExchangeStub(channel)
+        self.leader_stub = node_pb2_grpc.NodeExchangeStub(channel)
 
     def register(self):
         print("register")
-        print("id = ", self.id)
-        response = self.node_stub.RegisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
-        print(response)
+        response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+        self.heartbeat_timer.start()
 
     def deregister(self):
         print("deregister")
         if not self.is_leader:
-            self.node_stub.DeregisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
-
-
-    #
-    # Functions to perform when the Node is a leader
-    #
+            self.leader_stub.DeregisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+            self.heartbeat_timer.stop()
 
     def update_node_connections(self):
         print("update_node_connections")
 
         # connect to any new nodes
         for node_id in self.active_nodes.new_nodes():
-            print("new node(s) found!")
-            if not (node_id in self.stubs):
+            if node_id != self.id and not (node_id in self.stubs):
                 node = self.active_nodes.get_node(node_id)
                 ip_addr = node.ip_addr
                 port = node.port
@@ -120,18 +117,32 @@ class Node():
 
         # remove any old nodes
         for node_id in self.active_nodes.removed_nodes():
-            if (node_id in self.stubs):
+            if node_id != self.id and (node_id in self.stubs):
                 self.stubs.pop(node_id)
 
         # remove removed nodes from removed additions list
         self.active_nodes.reset_removed_nodes()
-    
+
+        print("after update, active_node_ids = ", self.active_nodes.get_ids())
+
+    def heartbeat_expired(self):
+        print("heartbeat_expired!!!!!!!!!!")
+
+        # TODO: leader election
+
+    #
+    # Functions to perform when the Node is a leader
+    #
+
     def send_heartbeat(self):
         print("function: send_heartbeat")
         for node_id in self.active_nodes.get_ids():
             stub = self.stubs[node_id]
             print("sending heartbeat to node = ", node_id)
-            response = stub.Heartbeat(node_pb2.HeartbeatRequest(nodes=self.active_nodes.get_nodes()))
+            response = stub.Heartbeat(node_pb2.HeartbeatRequest(
+                active_nodes_version=self.active_nodes.get_version(),
+                nodes=self.active_nodes.get_nodes())
+            )
             if response.received != True:
                 print("received bad response from node = ", node_id)
 
@@ -152,14 +163,14 @@ class Node():
         self.deregister()
 
     def main(self):
-        print("Starting...")
+        print(f'[node_id: {self.id}] Starting...')
 
         while True:
             print("in loop!")
-            time.sleep(5)
+            time.sleep(4)
             
+            self.update_node_connections()
             if self.is_leader:
-                self.update_node_connections()
                 self.send_heartbeat()
             if self.should_retrain_model():
                 print("should retrain model!")

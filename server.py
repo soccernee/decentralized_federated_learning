@@ -1,18 +1,21 @@
 import node_pb2
 import node_pb2_grpc
 
+from node import Node
+
 #
 # This class is the receiving portion of the Node (the "server" in client-server lingo).
 # For simplicity, we moved it into its own file to avoid cluttering node.py
 #
 
 class NodeExchange(node_pb2_grpc.NodeExchange):
-    def __init__(self, id, ip_addr, port, active_nodes, heartbeat_timer):
-        self.id = id
-        self.ip_addr = ip_addr
-        self.port = port
+    def __init__(self, node, active_nodes, heartbeat_timer, leader):
+        self.id = node.id
+        self.ip_addr = node.ip_addr
+        self.port = node.port
         self.active_nodes = active_nodes
         self.heartbeat_timer = heartbeat_timer
+        self.leader = leader
         self.model_version = 1
 
     def RegisterNode(self, request, context):
@@ -68,4 +71,28 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         
 
         response = node_pb2.HeartbeatResponse(received=True)
+        return response
+    
+    def DeclareLeadership(self, request, context):
+        if self.leader.alive:
+            # previous leader is still alive
+            print("uh oh! leader is still alive!")
+            response = node_pb2.NodeResponse(
+                response_code=400,
+                leader_id=self.leader.id,
+                leader_ip_addr=self.leader.ip_addr,
+                leader_port=self.leader.port
+            )
+            return response
+
+        # otherwise accept the new leader
+        print("accept the new leader! ", request.node_id)
+        self.leader = Node(request.node_id, request.ip_addr, request.port)
+
+        response = node_pb2.NodeResponse(
+            response_code=200,
+            leader_id=self.leader.id,
+            leader_ip_addr=self.leader.ip_addr,
+            leader_port=self.leader.port
+        )
         return response

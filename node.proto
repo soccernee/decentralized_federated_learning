@@ -14,6 +14,7 @@ service NodeExchange {
   rpc DistributeModelWeights (ModelRequest) returns (ModelResponse) {}
 
   // actions from the node to the other nodes
+  rpc DeclareLeadership (NodeRequest) returns (NodeResponse) {}
 }
 
 message ModelWeight {
@@ -32,7 +33,6 @@ message NodeResponse {
   string leader_id = 2;
   string leader_ip_addr = 3;
   int32 leader_port = 4;
-  optional string error = 5;
 }
 
 message ModelRequest {

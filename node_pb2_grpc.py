@@ -41,6 +41,11 @@ class NodeExchangeStub(object):
                 request_serializer=node__pb2.ModelRequest.SerializeToString,
                 response_deserializer=node__pb2.ModelResponse.FromString,
                 )
+        self.DeclareLeadership = channel.unary_unary(
+                '/NodeExchange/DeclareLeadership',
+                request_serializer=node__pb2.NodeRequest.SerializeToString,
+                response_deserializer=node__pb2.NodeResponse.FromString,
+                )
 
 
 class NodeExchangeServicer(object):
@@ -80,6 +85,13 @@ class NodeExchangeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeclareLeadership(self, request, context):
+        """actions from the node to the other nodes
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NodeExchangeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -107,6 +119,11 @@ def add_NodeExchangeServicer_to_server(servicer, server):
                     servicer.DistributeModelWeights,
                     request_deserializer=node__pb2.ModelRequest.FromString,
                     response_serializer=node__pb2.ModelResponse.SerializeToString,
+            ),
+            'DeclareLeadership': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeclareLeadership,
+                    request_deserializer=node__pb2.NodeRequest.FromString,
+                    response_serializer=node__pb2.NodeResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -202,5 +219,22 @@ class NodeExchange(object):
         return grpc.experimental.unary_unary(request, target, '/NodeExchange/DistributeModelWeights',
             node__pb2.ModelRequest.SerializeToString,
             node__pb2.ModelResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeclareLeadership(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/DeclareLeadership',
+            node__pb2.NodeRequest.SerializeToString,
+            node__pb2.NodeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

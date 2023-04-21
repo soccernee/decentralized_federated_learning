@@ -1,0 +1,211 @@
+from concurrent import futures
+import grpc
+import random
+import _thread
+import time
+import signal
+import sys
+import uuid
+
+import config
+import node_pb2
+import node_pb2_grpc
+
+from node import Node
+from server import NodeExchange 
+from active_nodes import ActiveNodes
+from heartbeat_timer import HeartbeatTimer
+
+class NodeServer():
+    #
+    # Initialization functions
+    #
+
+    def __init__(self):
+        random.seed()
+
+        self.is_leader = False
+        self.node = None # this node's information
+        self.leader = None
+
+        self.id = str(uuid.uuid4())
+        self.leader_stub = None
+        self.stubs = {}
+        self.active_nodes = ActiveNodes()
+        self.heartbeat_timer = HeartbeatTimer(self.heartbeat_expired)
+
+        if len(sys.argv) > 1:
+            data = str(sys.argv[1])
+            if data == "leader":
+                self.is_leader = True
+
+        # Logic to handle SIGINT
+        self.SIGINT = False
+        signal.signal(signal.SIGINT, self.signal_handler)
+
+        if self.is_leader:
+            print("is leader!")
+            self.ip_addr = config.LEADER_HOST
+            self.port = config.LEADER_PORT
+            self.node = Node(self.id, self.ip_addr, self.port, True)
+        else:
+            print("not a leader!")
+            self.set_defaults()
+            self.connect_to_leader()
+            time.sleep(2)
+            self.register()
+
+        _thread.start_new_thread(self.listen, ())
+        self.main()
+
+    def set_defaults(self):
+        ip_addr = 'localhost'
+        print("ip_addr = ", ip_addr)
+        
+        self.is_leader = False
+        self.ip_addr = ip_addr 
+        self.port = 6188 + random.randint(0, 100)
+        self.node = Node(self.id, self.ip_addr, self.port, True)
+        self.leader = Node('0', config.LEADER_HOST, config.LEADER_PORT, False)
+
+    def listen(self):
+        str_port = str(self.port)
+        print("listening on port, ", str_port)
+
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        node_pb2_grpc.add_NodeExchangeServicer_to_server(
+            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader), server)
+        server.add_insecure_port('[::]:' + str_port)
+        server.start()
+        print("Servers started, listening... ")
+        server.wait_for_termination()
+        
+    #
+    # Functions to perform when the node is not the leader
+    #
+
+    def connect_to_leader(self):
+        print("Connect to Leader")
+        # register with the leader
+        channel = grpc.insecure_channel(
+            '{}:{}'.format(self.leader.ip_addr, self.leader.port))
+        
+        self.leader_stub = node_pb2_grpc.NodeExchangeStub(channel)
+
+    def register(self):
+        print("register")
+        response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+        print("registration response = ", response)
+        self.leader.set_alive(True)
+        self.heartbeat_timer.start()
+
+    def deregister(self):
+        print("deregister")
+        if not self.is_leader:
+            self.leader_stub.DeregisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+            self.heartbeat_timer.stop()
+
+    def heartbeat_expired(self):
+        self.leader.set_alive(False)
+        print("heartbeat_expired!!!!!!!!!!")
+    
+        highest_id = True
+        for id in self.active_nodes.get_ids():
+            if id == self.id:
+                continue
+            print("self > id? ", (self.id > id))
+            if self.id < id:
+                highest_id = False
+
+        if highest_id:
+            self.declare_leadership()
+        print("highest id? ", highest_id)
+            
+        
+
+    #
+    # Functions to perform when the Node is a leader
+    #
+
+    def send_heartbeat(self):
+        print("function: send_heartbeat")
+        for node_id in self.active_nodes.get_ids():
+            stub = self.stubs[node_id]
+            print("sending heartbeat to node = ", node_id)
+            response = stub.Heartbeat(node_pb2.HeartbeatRequest(
+                active_nodes_version=self.active_nodes.get_version(),
+                nodes=self.active_nodes.get_nodes())
+            )
+            if response.received != True:
+                print("received bad response from node = ", node_id)
+
+    def should_retrain_model(self):
+        return False
+
+    #
+    # Functions all nodes perform
+    #
+
+    def declare_leadership(self):
+        for node_id in self.active_nodes.get_ids():
+            if node_id == self.id:
+                continue
+            stub = self.stubs[node_id]
+            print("declaring leadership to node = ", node_id)
+            response = stub.DeclareLeadership(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port)            )
+            print("response! = ", response)
+
+            # TODO: if majority agree, it becomes leader
+            # TODO: other nodes need to move their appropriate stub to the "leader stub" field
+            
+
+    def update_node_connections(self):
+        print("update_node_connections")
+
+        # connect to any new nodes
+        for node_id in self.active_nodes.new_nodes():
+            if node_id != self.id and not (node_id in self.stubs):
+                node = self.active_nodes.get_node(node_id)
+                ip_addr = node.ip_addr
+                port = node.port
+
+                new_channel = grpc.insecure_channel('{}:{}'.format(ip_addr, port))
+                new_stub = node_pb2_grpc.NodeExchangeStub(new_channel)
+                self.stubs[node_id] = new_stub
+
+        # remove new nodes from new additions list
+        self.active_nodes.reset_new_nodes()
+
+        # remove any old nodes
+        for node_id in self.active_nodes.removed_nodes():
+            if node_id != self.id and (node_id in self.stubs):
+                self.stubs.pop(node_id)
+
+        # remove removed nodes from removed additions list
+        self.active_nodes.reset_removed_nodes()
+
+        print("after update, active_node_ids = ", self.active_nodes.get_ids())
+
+    def signal_handler(self, signal, frame):
+        print('\nYou quit the program!')
+        self.end_session()
+        self.SIGINT = True
+        sys.exit(0)
+    
+    def end_session(self):
+        self.deregister()
+
+    def main(self):
+        print(f'[node_id: {self.id}] Starting...')
+
+        while True:
+            print("in loop!")
+            time.sleep(4)
+
+            self.update_node_connections()
+            if self.is_leader:
+                self.send_heartbeat()
+            if self.should_retrain_model():
+                print("should retrain model!")
+
+node = NodeServer()

@@ -8,12 +8,10 @@ import sys
 import uuid
 
 import config
-import leader_pb2
-import leader_pb2_grpc
 import node_pb2
 import node_pb2_grpc
 
-from server import LeaderExchange, NodeExchange 
+from server import NodeExchange 
 from active_nodes import ActiveNodes
 
 class Node():
@@ -69,7 +67,6 @@ class Node():
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
             NodeExchange(self.id, self.ip_addr, self.port, self.active_nodes), server)
-        leader_pb2_grpc.add_LeaderExchangeServicer_to_server(LeaderExchange(self.active_nodes), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")
@@ -115,7 +112,7 @@ class Node():
                 port = node.port
 
                 new_channel = grpc.insecure_channel('{}:{}'.format(ip_addr, port))
-                new_stub = leader_pb2_grpc.LeaderExchangeStub(new_channel)
+                new_stub = node_pb2_grpc.NodeExchangeStub(new_channel)
                 self.stubs[node_id] = new_stub
 
         # remove new nodes from new additions list
@@ -134,7 +131,7 @@ class Node():
         for node_id in self.active_nodes.get_ids():
             stub = self.stubs[node_id]
             print("sending heartbeat to node = ", node_id)
-            response = stub.Heartbeat(leader_pb2.HeartbeatRequest(nodes=self.active_nodes.get_nodes()))
+            response = stub.Heartbeat(node_pb2.HeartbeatRequest(nodes=self.active_nodes.get_nodes()))
             if response.received != True:
                 print("received bad response from node = ", node_id)
 

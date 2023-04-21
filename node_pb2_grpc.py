@@ -32,6 +32,16 @@ class NodeExchangeStub(object):
                 request_serializer=node__pb2.ModelRequest.SerializeToString,
                 response_deserializer=node__pb2.ModelResponse.FromString,
                 )
+        self.Heartbeat = channel.unary_unary(
+                '/NodeExchange/Heartbeat',
+                request_serializer=node__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=node__pb2.HeartbeatResponse.FromString,
+                )
+        self.DistributeModelWeights = channel.unary_unary(
+                '/NodeExchange/DistributeModelWeights',
+                request_serializer=node__pb2.ModelRequest.SerializeToString,
+                response_deserializer=node__pb2.ModelResponse.FromString,
+                )
 
 
 class NodeExchangeServicer(object):
@@ -58,6 +68,19 @@ class NodeExchangeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Heartbeat(self, request, context):
+        """actions from the leader to the other nodes
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DistributeModelWeights(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NodeExchangeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -73,6 +96,16 @@ def add_NodeExchangeServicer_to_server(servicer, server):
             ),
             'ShareModelWeights': grpc.unary_unary_rpc_method_handler(
                     servicer.ShareModelWeights,
+                    request_deserializer=node__pb2.ModelRequest.FromString,
+                    response_serializer=node__pb2.ModelResponse.SerializeToString,
+            ),
+            'Heartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.Heartbeat,
+                    request_deserializer=node__pb2.HeartbeatRequest.FromString,
+                    response_serializer=node__pb2.HeartbeatResponse.SerializeToString,
+            ),
+            'DistributeModelWeights': grpc.unary_unary_rpc_method_handler(
+                    servicer.DistributeModelWeights,
                     request_deserializer=node__pb2.ModelRequest.FromString,
                     response_serializer=node__pb2.ModelResponse.SerializeToString,
             ),
@@ -135,6 +168,40 @@ class NodeExchange(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/NodeExchange/ShareModelWeights',
+            node__pb2.ModelRequest.SerializeToString,
+            node__pb2.ModelResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Heartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/Heartbeat',
+            node__pb2.HeartbeatRequest.SerializeToString,
+            node__pb2.HeartbeatResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DistributeModelWeights(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/DistributeModelWeights',
             node__pb2.ModelRequest.SerializeToString,
             node__pb2.ModelResponse.FromString,
             options, channel_credentials,

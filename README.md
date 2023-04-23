@@ -18,6 +18,8 @@ This is a project to demonstrate the principles of distributed computing. We are
 
 ## Setup
 
+Run: `pip install sklearn openpyxl`
+
 ### Compiling for gRPC
 
 These steps only need to occur after developmental changes. If you just cloned the repo and pulled down the latest you should not need to complete this step. However, if you make any changes to `node.proto`, you'll need to recompile by performing this step.

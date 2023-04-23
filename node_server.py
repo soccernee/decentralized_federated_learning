@@ -9,6 +9,7 @@ import uuid
 
 import config
 from model import Model
+from model_train import MachineLearning
 import node_pb2
 import node_pb2_grpc
 
@@ -34,6 +35,8 @@ class NodeServer():
         self.new_leader_flag = False # used by the gRPC to signal new leadership
         self.stubs = {}
         self.active_nodes = ActiveNodes()
+        self.data_split = MachineLearning()
+
         self.model = Model()
 
         self.heartbeat_timer = HeartbeatTimer()
@@ -42,6 +45,10 @@ class NodeServer():
             data = str(sys.argv[1])
             if data == "leader":
                 self.is_leader = True
+            elif data == "0" or data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
+                self.model.add_data(self.data_split.get_data_for_node(data))
+        else:
+            sys.exit("Please specify if this node is a leader or not")
 
         # Logic to handle SIGINT
         self.SIGINT = False

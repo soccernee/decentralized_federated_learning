@@ -10,6 +10,8 @@ class MachineLearning():
         all_data = pd.read_csv('diabetes.csv', header=0)
 
         self.X = all_data.iloc[:, 0:8].to_numpy()
+        self.X_dict = {}
+        self.y_dict = {}
         print("len X = ", len(self.X))
 
         self.y = all_data.iloc[:, 8].to_numpy()
@@ -29,6 +31,11 @@ class MachineLearning():
         for i in range(0, 10):
             # Set aside the testing set
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
+            
+            # print("X train: ", X_train)
+            # print("y train: ", y_train)
+            # print("X test: ", X_test)
+            # print("y test: ", y_test)
 
             # establish a baseline accuracy
             nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
@@ -48,27 +55,43 @@ class MachineLearning():
 
     def split_data(self):
         # Set aside the testing set
-        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state=1)
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
 
         print("len X = ", len(X_train))
-        self.X_node = []
-        self.X_node_1 = X_train[0:80]
-        self.X_node_2 = X_train[81:160]
-        self.X_node_3 = X_train[161:240]
-        self.X_node_4 = X_train[241:320]
-        self.X_node_5 = X_train[321:400]
-        self.X_leader = X_train[401:]
+        self.X_dict[1] = X_train[0:80]
+        self.X_dict[2] = X_train[81:160]
+        self.X_dict[3] = X_train[161:240]
+        self.X_dict[4] = X_train[241:320]
+        self.X_dict[5] = X_train[321:400]
 
-        self.y_node_1 = y_train[0:80]
-        self.y_node_2 = y_train[81:160]
-        self.y_node_3 = y_train[161:240]
-        self.y_node_4 = y_train[241:320]
-        self.y_node_5 = y_train[321:400]
-        self.y_leader = y_train[401:]
+        self.y_dict[1] = y_train[0:80]
+        self.y_dict[2] = y_train[81:160]
+        self.y_dict[3] = y_train[161:240]
+        self.y_dict[4] = y_train[241:320]
+        self.y_dict[5] = y_train[321:400]
 
+        # self.X_node_1 = X_train[0:80]
+        # self.X_node_2 = X_train[81:160]
+        # self.X_node_3 = X_train[161:240]
+        # self.X_node_4 = X_train[241:320]
+        # self.X_node_5 = X_train[321:400]
+        # self.X_leader = X_train[401:]
+
+        # self.y_node_1 = y_train[0:80]
+        # self.y_node_2 = y_train[81:160]
+        # self.y_node_3 = y_train[161:240]
+        # self.y_node_4 = y_train[241:320]
+        # self.y_node_5 = y_train[321:400]
+        # self.y_leader = y_train[401:]
+
+    def get_data_for_node(self, node_num):
+        return self.X_dict[node_num], self.y_dict[node_num]
+    
     def leader_train(self):
-        lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
-        return lr_clf.coefs_
+
+        pass
+
+
 
     # initial code, function not be run
     def parking_lot(self):

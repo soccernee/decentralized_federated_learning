@@ -1,5 +1,7 @@
 class Model():
     def __init__(self) -> None:
+        self.x_data = None
+        self.y_data = None
         self.model_weights = None
         self.model_version = 1
         self.num_model_data_points = 0
@@ -12,4 +14,8 @@ class Model():
 
     def get_model(self):
         return self.model_weights, self.model_version, self.num_model_data_points
+    
+    def add_data(self, data):
+        self.x_data = data[0]
+        self.y_data = data[1]
     

@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 class MachineLearning():
     def __init__(self):
@@ -26,9 +29,12 @@ class MachineLearning():
     def baseline_reading(self):
         nn_total_accuracy = 0
         lr_total_accuracy = 0
+        dt_total_accuracy = 0
+        rf_total_accuracy = 0
+        kn_total_accuracy = 0
         count = 0
 
-        for i in range(0, 10):
+        for i in range(0, 20):
             # Set aside the testing set
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
             
@@ -50,8 +56,26 @@ class MachineLearning():
             lr_accuracy = accuracy_score(y_test, y_pred_lr)
             lr_total_accuracy += lr_accuracy
 
+            dt_clf = DecisionTreeClassifier(max_depth=5).fit(X_train, y_train)
+            y_pred_dt = dt_clf.predict(X_test)
+            dt_accuracy = accuracy_score(y_test, y_pred_dt)
+            dt_total_accuracy += dt_accuracy
+            
+            rf_clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1).fit(X_train, y_train)
+            y_pred_rf = rf_clf.predict(X_test)
+            rf_accuracy = accuracy_score(y_test, y_pred_rf)
+            rf_total_accuracy += rf_accuracy
+            
+            kn_clf = KNeighborsClassifier(3).fit(X_train, y_train)
+            y_pred_kn = kn_clf.predict(X_test)
+            kn_accuracy = accuracy_score(y_test, y_pred_kn)
+            kn_total_accuracy += kn_accuracy
+
         print("nn avg. accuracy = ", (nn_total_accuracy / count))
         print("lr avg. accuracy = ", (lr_total_accuracy / count))
+        print("dt avg. accuracy = ", (dt_total_accuracy / count))
+        print("rf avg. accuracy = ", (rf_total_accuracy / count))
+        print("kn avg. accuracy = ", (kn_total_accuracy / count))
 
     def split_data(self):
         # Set aside the testing set
@@ -63,35 +87,21 @@ class MachineLearning():
         self.X_dict[3] = X_train[161:240]
         self.X_dict[4] = X_train[241:320]
         self.X_dict[5] = X_train[321:400]
+        self.X_leader = X_train[401:]
 
         self.y_dict[1] = y_train[0:80]
         self.y_dict[2] = y_train[81:160]
         self.y_dict[3] = y_train[161:240]
         self.y_dict[4] = y_train[241:320]
         self.y_dict[5] = y_train[321:400]
-
-        # self.X_node_1 = X_train[0:80]
-        # self.X_node_2 = X_train[81:160]
-        # self.X_node_3 = X_train[161:240]
-        # self.X_node_4 = X_train[241:320]
-        # self.X_node_5 = X_train[321:400]
-        # self.X_leader = X_train[401:]
-
-        # self.y_node_1 = y_train[0:80]
-        # self.y_node_2 = y_train[81:160]
-        # self.y_node_3 = y_train[161:240]
-        # self.y_node_4 = y_train[241:320]
-        # self.y_node_5 = y_train[321:400]
-        # self.y_leader = y_train[401:]
+        self.y_leader = y_train[401:]
 
     def get_data_for_node(self, node_num):
         return self.X_dict[node_num], self.y_dict[node_num]
     
     def leader_train(self):
-
-        pass
-
-
+        lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
+        return lr_clf.coef_
 
     # initial code, function not be run
     def parking_lot(self):
@@ -135,9 +145,9 @@ class MachineLearning():
 
 
     def main(self):
-        # self.baseline_reading()
+        self.baseline_reading()
 
-        self.split_data()
+        # self.split_data()
 
 
 

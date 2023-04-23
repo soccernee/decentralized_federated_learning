@@ -55,19 +55,25 @@ class MachineLearning():
         # Set aside the testing set
         (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
 
-        # split by number of nodes
-        X_split = []
-        Y_split = []
-        for i in range(self.num_nodes):
-            start = 80 * i
-            end = 80 *(i+1)
-            print("start: ", start)
-            print("end: ", end)
+        print("len X = ", len(X_train))
+        X_node_1 = X_train[0:80]
+        X_node_2 = X_train[81:160]
+        X_node_3 = X_train[161:240]
+        X_node_4 = X_train[241:320]
+        X_node_5 = X_train[321:400]
+        X_leader = X_train[401:]
 
-            X_split[i] = self.X[start:end]
-            Y_split[i] = self.y[start:end]
-            print(X_split)
-            print(Y_split)
+        y_node_1 = y_train[0:80]
+        y_node_2 = y_train[81:160]
+        y_node_3 = y_train[161:240]
+        y_node_4 = y_train[241:320]
+        y_node_5 = y_train[321:400]
+        y_leader = y_train[401:]
+
+    def leader_train(self):
+        pass
+
+
 
     # initial code, function not be run
     def parking_lot(self):
@@ -111,7 +117,7 @@ class MachineLearning():
 
 
     def main(self):
-        self.baseline_reading()
+        # self.baseline_reading()
 
         self.split_data()
 

@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 
 class MachineLearning():
     def __init__(self):
-        all_data = pd.read_excel('diabetes_init_train.xlsx', header=None)
+        all_data = pd.read_excel('diabetes.xlsx', header=None)
 
         self.X = all_data.iloc[:, 0:8].to_numpy()
         print("len X = ", len(self.X))
@@ -35,7 +35,7 @@ class MachineLearning():
             # print("y test: ", y_test)
 
             # establish a baseline accuracy
-            clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
+            clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
 

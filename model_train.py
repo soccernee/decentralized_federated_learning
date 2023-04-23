@@ -29,11 +29,6 @@ class MachineLearning():
         for i in range(0, 10):
             # Set aside the testing set
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
-            
-            # print("X train: ", X_train)
-            # print("y train: ", y_train)
-            # print("X test: ", X_test)
-            # print("y test: ", y_test)
 
             # establish a baseline accuracy
             nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
@@ -53,9 +48,10 @@ class MachineLearning():
 
     def split_data(self):
         # Set aside the testing set
-        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state=1)
 
         print("len X = ", len(X_train))
+        self.X_node = []
         self.X_node_1 = X_train[0:80]
         self.X_node_2 = X_train[81:160]
         self.X_node_3 = X_train[161:240]
@@ -71,10 +67,8 @@ class MachineLearning():
         self.y_leader = y_train[401:]
 
     def leader_train(self):
-
-        pass
-
-
+        lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
+        return lr_clf.coefs_
 
     # initial code, function not be run
     def parking_lot(self):

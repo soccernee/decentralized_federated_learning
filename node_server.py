@@ -133,8 +133,6 @@ class NodeServer():
 
         if highest_id:
             self.declare_leadership()
-            
-        
 
     #
     # Functions to perform when the Node is a leader
@@ -185,8 +183,6 @@ class NodeServer():
             self.is_leader = True
             self.leader_stub = None
             self.active_nodes.remove_node(self.id)
-
-        
             
     def recognize_new_leadership(self):
         print("recognize new leadership")

@@ -72,18 +72,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         return response
     
     def DeclareLeadership(self, request, context):
-        # if self.leader.get_alive():
-        #     # previous leader is still alive
-        #     print("uh oh! leader is still alive!")
-        #     response = node_pb2.NodeResponse(
-        #         response_code=400,
-        #         leader_id=self.leader.id,
-        #         leader_ip_addr=self.leader.ip_addr,
-        #         leader_port=self.leader.port
-        #     )
-        #     return response
-
-        # otherwise accept the new leader
+        # accept the new leader
         print("accept the new leader! ", request.id)
         self.leader = Node(request.id, request.ip_addr, request.port, True)
         self.new_leader_flag = True

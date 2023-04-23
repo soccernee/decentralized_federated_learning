@@ -99,14 +99,24 @@ class MachineLearning():
     def get_data_for_node(self, node_num):
         return self.X_dict[node_num], self.y_dict[node_num]
     
-    def leader_train(self):
+    def leader_train(self, node_model):
         lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
-        return lr_clf.coef_
+        node_model.update_model_weights(lr_clf.coef_, len(self.X_leader))
+        return node_model
     
-    def train_for_node(self, node_num):
-        x, y = self.get_data_for_node(node_num)
-        lr_clf = LogisticRegression(max_iter = 1000).fit(x, y)
-        return lr_clf.coef_
+    def train_for_node(self, node_model):
+        #x, y = self.get_data_for_node(node_num)
+        lr_clf = LogisticRegression(max_iter = 1000)
+        lr_clf.coef_ = node_model.model_weights
+        #TODO: Add this logic
+        #node_model.num_model_data_points
+        lr_clf.fit(node_model.x_data, node_model.y_data)
+
+        new_weights = lr_clf.coef_
+        weights_merged = [(w1 * 95.0 + w2) / 100.0 for (w1, w2) in zip(node_model.model_weights, new_weights)]
+        node_model.update_model_weights(weights_merged, node_model.num_data_points + len(node_model.x_data))
+        return node_model
+        
 
     # initial code, function not be run
     def parking_lot(self):

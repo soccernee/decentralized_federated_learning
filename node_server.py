@@ -35,7 +35,7 @@ class NodeServer():
         self.new_leader_flag = False # used by the gRPC to signal new leadership
         self.stubs = {}
         self.active_nodes = ActiveNodes()
-        self.data_split = MachineLearning()
+        self.machine_learning = MachineLearning()
 
         self.model = Model()
 
@@ -45,11 +45,17 @@ class NodeServer():
             data = str(sys.argv[1])
             if data == "leader":
                 self.is_leader = True
-            elif data == "0" or data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
-                self.model.add_data(self.data_split.get_data_for_node(data))
+            elif data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
+                self.model.add_data(self.machine_learning.get_data_for_node(data))
+            else:
+                sys.exit("Please specify if this node is a leader or not")
         else:
             sys.exit("Please specify if this node is a leader or not")
 
+    
+        
+
+        
         # Logic to handle SIGINT
         self.SIGINT = False
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -59,6 +65,7 @@ class NodeServer():
             self.ip_addr = config.LEADER_HOST
             self.port = config.LEADER_PORT
             self.node = Node(self.id, self.ip_addr, self.port, True)
+            self.machine_learning.leader_train()
         else:
             print("not a leader!")
             self.set_defaults()
@@ -228,6 +235,10 @@ class NodeServer():
     def end_session(self):
         self.deregister()
 
+
+    def retrain_model(self):
+        self.machine_learning.train_for_node(self.model)
+
     def main(self):
         print(f'[node_id: {self.id}] Starting...')
 
@@ -237,6 +248,9 @@ class NodeServer():
                 self.recognize_new_leadership()
 
             time.sleep(4)
+
+            #TODO: some random chance it retrains
+            self.retrain_model()
 
             self.update_node_connections()
 

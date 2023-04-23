@@ -45,7 +45,7 @@ class NodeServer():
             if data == "leader":
                 self.is_leader = True
             elif data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
-                self.model.add_data(self.machine_learning.get_data_for_node(data))
+                self.model.add_data(self.machine_learning.get_data_for_node(int(data)))
             else:
                 sys.exit("Please specify if this node is a leader or not")
         else:
@@ -144,10 +144,8 @@ class NodeServer():
         active_nodes_version = self.active_nodes.get_version()
 
         model_weights, num_data_points = self.model.get_model()
-        print("model_weights = ", model_weights[0])
-        model_request = node_pb2.ModelRequest(0, num_data_points, model_weights[0])
+        model_request = node_pb2.ModelRequest(model_version=0, num_data_points=num_data_points, modelWeights=model_weights[0])
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
-        # del heartbeat_request.nodes[:]
         for node_id in active_ids:
             node = self.active_nodes.get_node(node_id)
             if node is None:

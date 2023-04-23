@@ -30,9 +30,11 @@ class NodeServer():
 
         self.id = str(uuid.uuid4())
         self.leader_stub = None
+        self.new_leader_flag = False # used by the gRPC to signal new leadership
         self.stubs = {}
         self.active_nodes = ActiveNodes()
-        self.heartbeat_timer = HeartbeatTimer(self.heartbeat_expired)
+        # self.heartbeat_timer = HeartbeatTimer(self.heartbeat_expired)
+        self.heartbeat_timer = HeartbeatTimer()
 
         if len(sys.argv) > 1:
             data = str(sys.argv[1])
@@ -74,7 +76,7 @@ class NodeServer():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
-            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader), server)
+            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")
@@ -97,13 +99,13 @@ class NodeServer():
         response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
         print("registration response = ", response)
         self.leader.set_alive(True)
-        self.heartbeat_timer.start()
+        # self.heartbeat_timer.start()
 
     def deregister(self):
         print("deregister")
         if not self.is_leader:
             self.leader_stub.DeregisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
-            self.heartbeat_timer.stop()
+            # self.heartbeat_timer.stop()
 
     def heartbeat_expired(self):
         self.leader.set_alive(False)
@@ -119,53 +121,79 @@ class NodeServer():
 
         if highest_id:
             self.declare_leadership()
-        print("highest id? ", highest_id)
             
         
 
     #
     # Functions to perform when the Node is a leader
     #
-
     def send_heartbeat(self):
         print("function: send_heartbeat")
-        for node_id in self.active_nodes.get_ids():
-            stub = self.stubs[node_id]
-            print("sending heartbeat to node = ", node_id)
-            response = stub.Heartbeat(node_pb2.HeartbeatRequest(
-                active_nodes_version=self.active_nodes.get_version(),
-                nodes=self.active_nodes.get_nodes())
-            )
-            if response.received != True:
-                print("received bad response from node = ", node_id)
+        active_ids = list(self.active_nodes.get_ids()).copy()
+        active_nodes_version = self.active_nodes.get_version()
+        heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version)
+        del heartbeat_request.nodes[:]
+        for node_id in active_ids:
+            node = self.active_nodes.get_node(node_id)
+            if node is None:
+                continue
+            print("Heartbeat_request")
+            print(heartbeat_request)
+            heartbeat_request.nodes.append(node_pb2.NodeRequest(node_id=node.id, ip_addr=node.ip_addr, port=node.port))
 
-    def should_retrain_model(self):
-        return False
+        print("FINAL HEARTBEAT_REQUST: ", heartbeat_request)
+        for node_id in active_ids:
+            if node_id in self.stubs:
+                stub = self.stubs[node_id]
+                print("sending heartbeat to node = ", node_id)
+                print(stub)
+                response = stub.Heartbeat(heartbeat_request)
+                if response.received != True:
+                    print("received bad response from node = ", node_id)
 
     #
     # Functions all nodes perform
     #
 
     def declare_leadership(self):
+        count_nodes = 0
+        count_yes = 0
         for node_id in self.active_nodes.get_ids():
             if node_id == self.id:
                 continue
+            count_nodes += 1
             stub = self.stubs[node_id]
             print("declaring leadership to node = ", node_id)
-            response = stub.DeclareLeadership(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port)            )
+            response = stub.DeclareLeadership(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
             print("response! = ", response)
 
-            # TODO: if majority agree, it becomes leader
-            # TODO: other nodes need to move their appropriate stub to the "leader stub" field
+            if response.response_code == 200:
+                count_yes += 1
+
+        if count_yes > (count_nodes / 2):
+            print("I AM THE LEADER")
+            self.is_leader = True
+            self.leader_stub = None
+            self.active_nodes.remove_node(self.id)
+
+        
             
+    def recognize_new_leadership(self):
+        print("recognize new leadership")
+        self.leader_stub = self.stubs[self.leader.id]
+        self.stubs.pop(self.leader.id)
+
+        self.new_leader_flag = False # reset to False
 
     def update_node_connections(self):
-        print("update_node_connections")
+        print("update node connections")
 
         # connect to any new nodes
         for node_id in self.active_nodes.new_nodes():
             if node_id != self.id and not (node_id in self.stubs):
                 node = self.active_nodes.get_node(node_id)
+                if node is None:
+                    continue
                 ip_addr = node.ip_addr
                 port = node.port
 
@@ -200,12 +228,18 @@ class NodeServer():
 
         while True:
             print("in loop!")
+            if self.new_leader_flag:
+                self.recognize_new_leadership()
+
             time.sleep(4)
 
             self.update_node_connections()
+
             if self.is_leader:
                 self.send_heartbeat()
-            if self.should_retrain_model():
-                print("should retrain model!")
+            else:
+                self.heartbeat_timer.increment()
+                if self.heartbeat_timer.expired():
+                    self.heartbeat_expired()
 
 node = NodeServer()

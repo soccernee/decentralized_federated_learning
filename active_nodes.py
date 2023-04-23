@@ -17,21 +17,32 @@ class ActiveNodes():
     def get_version(self):
         return self.version
     
+    def set_version(self, version):
+        self.version = version
+    
     def get_ids(self):
-        return self.active_nodes.keys()
+        ids = []
+        for id, node in self.active_nodes.items():
+            if node is not None:
+                ids.append(id)
+        return ids
     
     def get_nodes(self):
+        print("[active_nodes] get_nodes")
         return self.active_nodes.values()
     
-    def add_node(self, node_id, node_request):
-        self.active_nodes[node_id] = node_request
+    def add_node(self, node_id, node):
+        print("[active_nodes] add_node")
+        self.active_nodes[node_id] = node
         self.recent_additions.append(node_id)
-        self.version = self.version + 1
+        self.version += 1
 
     def remove_node(self, node_id):
-        self.active_nodes.pop(node_id)
+        print("[active_nodes] remove_node")
+        self.active_nodes[node_id] = None
+        # self.active_nodes.pop(node_id)
         self.recent_deletions.append(node_id)
-        self.version = self.version + 1
+        self.version += 1
 
     def new_nodes(self):
         return self.recent_additions

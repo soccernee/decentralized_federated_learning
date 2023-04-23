@@ -9,28 +9,22 @@ from node import Node
 #
 
 class NodeExchange(node_pb2_grpc.NodeExchange):
-    def __init__(self, node, active_nodes, heartbeat_timer, leader):
+    def __init__(self, node, active_nodes, heartbeat_timer, leader, new_leader_flag):
         self.id = node.id
         self.ip_addr = node.ip_addr
         self.port = node.port
         self.active_nodes = active_nodes
         self.heartbeat_timer = heartbeat_timer
         self.leader = leader
+        self.new_leader_flag = new_leader_flag
         self.model_version = 1
 
     def RegisterNode(self, request, context):
         print("Register Node!")
         
-        node_id = request.node_id
-        node_ip_addr = request.ip_addr
-        node_port = request.port
-        node_request = node_pb2.NodeRequest(
-            node_id = node_id,
-            ip_addr = node_ip_addr,
-            port = node_port
-        )
+        new_node = Node(request.node_id, request.ip_addr, request.port, True)
 
-        self.active_nodes.add_node(node_id, node_request)
+        self.active_nodes.add_node(request.node_id, new_node)
         print("active_nodes = ", self.active_nodes.get_ids())
 
         response = node_pb2.NodeResponse(
@@ -46,28 +40,28 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         
         node_id = request.node_id
         self.active_nodes.remove_node(node_id)
-        print("active_nodes = ", self.active_nodes.get_ids())
 
         response = node_pb2.NodeResponse(response_code=200,leader_ip_addr=self.ip_addr,leader_port=self.port)
         return response
     
     def Heartbeat(self, request, context):
+        print("heartbeat received")
         self.heartbeat_timer.refresh()
 
         # logic to add new nodes and remove old nodes to active_nodes
         if request.active_nodes_version != self.active_nodes.get_version():
-            print("different version! check nodes list")
             active_ids = self.active_nodes.get_ids()
             for node in request.nodes:
-                if node.node_id not in active_ids:
-                    print("adding this node to my active list! ", node.node_id)
+                if node is not None and node.node_id not in active_ids:
                     self.active_nodes.add_node(node.node_id, node)
 
-            current_ids = (n.node_id for n in request.nodes)
+            current_ids = list(n.node_id for n in request.nodes)
             for id in active_ids:
-                if id not in current_ids:
-                    print("removing node = ", id)
+                node = self.active_nodes.get_node(id)
+                if node is not None and id not in current_ids:
                     self.active_nodes.remove_node(id)
+
+            self.active_nodes.set_version(request.active_nodes_version)
         
 
         response = node_pb2.HeartbeatResponse(received=True)
@@ -87,7 +81,8 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
 
         # otherwise accept the new leader
         print("accept the new leader! ", request.node_id)
-        self.leader = Node(request.node_id, request.ip_addr, request.port)
+        self.leader = Node(request.node_id, request.ip_addr, request.port, True)
+        self.new_leader_flag = True
 
         response = node_pb2.NodeResponse(
             response_code=200,

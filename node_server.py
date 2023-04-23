@@ -8,6 +8,7 @@ import sys
 import uuid
 
 import config
+from model import Model
 import node_pb2
 import node_pb2_grpc
 
@@ -33,7 +34,8 @@ class NodeServer():
         self.new_leader_flag = False # used by the gRPC to signal new leadership
         self.stubs = {}
         self.active_nodes = ActiveNodes()
-        # self.heartbeat_timer = HeartbeatTimer(self.heartbeat_expired)
+        self.model = Model()
+
         self.heartbeat_timer = HeartbeatTimer()
 
         if len(sys.argv) > 1:
@@ -76,7 +78,7 @@ class NodeServer():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
-            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag), server)
+            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag), server, self.model)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")

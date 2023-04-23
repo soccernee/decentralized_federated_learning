@@ -9,7 +9,7 @@ from node import Node
 #
 
 class NodeExchange(node_pb2_grpc.NodeExchange):
-    def __init__(self, node, active_nodes, heartbeat_timer, leader, new_leader_flag):
+    def __init__(self, node, active_nodes, heartbeat_timer, leader, new_leader_flag, model):
         self.id = node.id
         self.ip_addr = node.ip_addr
         self.port = node.port
@@ -17,7 +17,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         self.heartbeat_timer = heartbeat_timer
         self.leader = leader
         self.new_leader_flag = new_leader_flag
-        self.model_version = 1
+        self.model = model
 
     def RegisterNode(self, request, context):
         print("Register Node!")
@@ -90,4 +90,14 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
             leader_ip_addr=self.leader.ip_addr,
             leader_port=self.leader.port
         )
+        return response
+    
+    def DistributeModelWeights(self, request, context):
+        print("distribute model weights!")
+        
+        self.model.update_model(request.model_weights, request.model_version, request.num_model_data_points)
+        response = node_pb2.NodeResponse(
+            received=True,
+        )
+
         return response

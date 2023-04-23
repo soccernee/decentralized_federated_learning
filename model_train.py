@@ -101,7 +101,8 @@ class MachineLearning():
     
     def leader_train(self, node_model):
         lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
-        node_model.update_model_weights(lr_clf.coef_, len(self.X_leader))
+        node_model.update_model(lr_clf.coef_, len(self.X_leader))
+        print("~~ all done training leader ~~")
         return node_model
     
     def train_for_node(self, node_model):
@@ -160,7 +161,7 @@ class MachineLearning():
 
 
     def main(self):
-        self.baseline_reading()
+        # self.baseline_reading()
 
         self.split_data()
 

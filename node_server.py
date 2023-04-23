@@ -36,9 +36,8 @@ class NodeServer():
         self.stubs = {}
         self.active_nodes = ActiveNodes()
         self.machine_learning = MachineLearning()
-
+        self.machine_learning.split_data()
         self.model = Model()
-
         self.heartbeat_timer = HeartbeatTimer()
 
         if len(sys.argv) > 1:
@@ -52,10 +51,6 @@ class NodeServer():
         else:
             sys.exit("Please specify if this node is a leader or not")
 
-    
-        
-
-        
         # Logic to handle SIGINT
         self.SIGINT = False
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -65,7 +60,7 @@ class NodeServer():
             self.ip_addr = config.LEADER_HOST
             self.port = config.LEADER_PORT
             self.node = Node(self.id, self.ip_addr, self.port, True)
-            self.machine_learning.leader_train()
+            self.machine_learning.leader_train(self.model)
         else:
             print("not a leader!")
             self.set_defaults()
@@ -92,7 +87,7 @@ class NodeServer():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
-            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag), server, self.model)
+            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag, self.model), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")
@@ -147,8 +142,12 @@ class NodeServer():
         print("function: send_heartbeat")
         active_ids = list(self.active_nodes.get_ids()).copy()
         active_nodes_version = self.active_nodes.get_version()
-        heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version)
-        del heartbeat_request.nodes[:]
+
+        model_weights, num_data_points = self.model.get_model()
+        print("model_weights = ", model_weights[0])
+        model_request = node_pb2.ModelRequest(0, num_data_points, model_weights[0])
+        heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
+        # del heartbeat_request.nodes[:]
         for node_id in active_ids:
             node = self.active_nodes.get_node(node_id)
             if node is None:
@@ -237,6 +236,7 @@ class NodeServer():
 
 
     def retrain_model(self):
+        print("retrain model!")
         self.machine_learning.train_for_node(self.model)
 
     def main(self):
@@ -250,7 +250,8 @@ class NodeServer():
             time.sleep(4)
 
             #TODO: some random chance it retrains
-            self.retrain_model()
+            if random.randint(0, 100) < 3:
+                self.retrain_model()
 
             self.update_node_connections()
 

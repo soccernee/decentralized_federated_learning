@@ -65,6 +65,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         
         # update own model with server model
         if request.model:
+            print("received model = ", request.model)
             self.model.update_model(request.model.modelWeightMatrix, request.model.num_data_points)        
 
         response = node_pb2.HeartbeatResponse(received=True)

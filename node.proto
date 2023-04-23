@@ -17,11 +17,6 @@ service NodeExchange {
   rpc DeclareLeadership (NodeRequest) returns (NodeResponse) {}
 }
 
-message ModelWeightColumn {
-  int32 column = 1;
-  repeated float values = 2;
-}
-
 message NodeRequest {
   string id = 1;
   string ip_addr = 2;
@@ -38,7 +33,7 @@ message NodeResponse {
 message ModelRequest {
   int32 model_version = 1;
   int32 num_data_points = 2;
-  repeated ModelWeightColumn modelWeightMatrix = 3;
+  repeated float modelWeights = 3;
 }
 
 message ModelResponse {

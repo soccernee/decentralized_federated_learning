@@ -56,21 +56,22 @@ class MachineLearning():
         (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
 
         print("len X = ", len(X_train))
-        X_node_1 = X_train[0:80]
-        X_node_2 = X_train[81:160]
-        X_node_3 = X_train[161:240]
-        X_node_4 = X_train[241:320]
-        X_node_5 = X_train[321:400]
-        X_leader = X_train[401:]
+        self.X_node_1 = X_train[0:80]
+        self.X_node_2 = X_train[81:160]
+        self.X_node_3 = X_train[161:240]
+        self.X_node_4 = X_train[241:320]
+        self.X_node_5 = X_train[321:400]
+        self.X_leader = X_train[401:]
 
-        y_node_1 = y_train[0:80]
-        y_node_2 = y_train[81:160]
-        y_node_3 = y_train[161:240]
-        y_node_4 = y_train[241:320]
-        y_node_5 = y_train[321:400]
-        y_leader = y_train[401:]
+        self.y_node_1 = y_train[0:80]
+        self.y_node_2 = y_train[81:160]
+        self.y_node_3 = y_train[161:240]
+        self.y_node_4 = y_train[241:320]
+        self.y_node_5 = y_train[321:400]
+        self.y_leader = y_train[401:]
 
     def leader_train(self):
+
         pass
 
 

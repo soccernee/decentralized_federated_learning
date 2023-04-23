@@ -102,6 +102,11 @@ class MachineLearning():
     def leader_train(self):
         lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
         return lr_clf.coef_
+    
+    def train_for_node(self, node_num):
+        x, y = self.get_data_for_node(node_num)
+        lr_clf = LogisticRegression(max_iter = 1000).fit(x, y)
+        return lr_clf.coef_
 
     # initial code, function not be run
     def parking_lot(self):

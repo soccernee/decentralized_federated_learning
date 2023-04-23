@@ -17,9 +17,8 @@ class Node():
     def port(self):
         return self._port
     
-    @property
-    def alive(self):
+    def get_alive(self):
         return self._alive
     
-    def set_alive(self, alive):
-        self._alive = alive
+    def set_alive(self, new_state):
+        self._alive = new_state

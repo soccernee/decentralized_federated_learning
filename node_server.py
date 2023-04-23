@@ -96,7 +96,7 @@ class NodeServer():
 
     def register(self):
         print("register")
-        response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+        response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
         print("registration response = ", response)
         self.leader.set_alive(True)
         # self.heartbeat_timer.start()
@@ -104,12 +104,12 @@ class NodeServer():
     def deregister(self):
         print("deregister")
         if not self.is_leader:
-            self.leader_stub.DeregisterNode(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+            self.leader_stub.DeregisterNode(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
             # self.heartbeat_timer.stop()
 
     def heartbeat_expired(self):
-        self.leader.set_alive(False)
         print("heartbeat_expired!!!!!!!!!!")
+        self.leader.set_alive(False)
     
         highest_id = True
         for id in self.active_nodes.get_ids():
@@ -137,16 +137,12 @@ class NodeServer():
             node = self.active_nodes.get_node(node_id)
             if node is None:
                 continue
-            print("Heartbeat_request")
-            print(heartbeat_request)
-            heartbeat_request.nodes.append(node_pb2.NodeRequest(node_id=node.id, ip_addr=node.ip_addr, port=node.port))
+            heartbeat_request.nodes.append(node_pb2.NodeRequest(id=node.id, ip_addr=node.ip_addr, port=node.port))
 
-        print("FINAL HEARTBEAT_REQUST: ", heartbeat_request)
         for node_id in active_ids:
             if node_id in self.stubs:
                 stub = self.stubs[node_id]
                 print("sending heartbeat to node = ", node_id)
-                print(stub)
                 response = stub.Heartbeat(heartbeat_request)
                 if response.received != True:
                     print("received bad response from node = ", node_id)
@@ -164,7 +160,7 @@ class NodeServer():
             count_nodes += 1
             stub = self.stubs[node_id]
             print("declaring leadership to node = ", node_id)
-            response = stub.DeclareLeadership(node_pb2.NodeRequest(node_id=self.id, ip_addr=self.ip_addr, port=self.port))
+            response = stub.DeclareLeadership(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
             print("response! = ", response)
 
             if response.response_code == 200:

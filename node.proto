@@ -23,7 +23,7 @@ message ModelWeight {
 }
 
 message NodeRequest {
-  string node_id = 1;
+  string id = 1;
   string ip_addr = 2;
   int32 port = 3;
 }

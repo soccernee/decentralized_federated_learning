@@ -39,12 +39,25 @@ print(y_pred_new)
 accuracy = accuracy_score(y_test, y_pred_new)
 print(accuracy)
 new_coefs = clf_new.coefs_
-new_coefsArr = np.asarray(new_coefs)
-print(new_coefsArr)
-updated_coefs = init_coefs*0.95 + new_coefsArr*0.05
+print(new_coefs[0])
 
-clf_updated = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
-clf_updated.coefs_ = updated_coefs
-y_pred_updated = clf_updated.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred_updated)
+
+weights_merged = [(w1 * 95.0 + w2) / 100.0 for (w1, w2) in zip(init_coefs, new_coefs)]
+
+
+clf_merged = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
+clf_merged.fit(X, y)
+clf_merged.coefs_ = weights_merged
+y_pred_merged = clf_merged.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred_merged)
 print(accuracy)
+
+# updated_coefs = init_coefs[0]*0.95 + new_coefs[0]*0.05
+# print(updated_coefs)
+# updated_coefs_arr = np.array(updated_coefs)
+# print(updated_coefs_arr)
+# clf_updated = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
+# clf_updated.coefs_ = updated_coefs_arr
+# y_pred_updated = clf_updated.predict(X_test)
+# accuracy = accuracy_score(y_test, y_pred_updated)
+# print(accuracy)

@@ -113,7 +113,7 @@ class MachineLearning():
 
         new_weights = lr_clf.coef_
         weights_merged = [(w1 * orig_percentage + w2 * new_percentage) for (w1, w2) in zip(node_model.model_weights, new_weights)]
-        node_model.update_model_weights(weights_merged, node_model.num_data_points + len(node_model.x_data))
+        node_model.update_model(weights_merged, node_model.num_model_data_points + len(node_model.x_data))
         return node_model
 
     def main(self):

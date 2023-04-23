@@ -236,6 +236,13 @@ class NodeServer():
     def retrain_model(self):
         print("retrain model!")
         self.machine_learning.train_for_node(self.model)
+        if self.leader_stub:
+            weights, num_model_data_points  = self.model.get_model()
+            print(weights)
+            response = self.leader_stub.DistributeModelWeights(node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights[0]))
+            print("response sending updated weights = ", response)
+        else:
+            print("Failed to send updated model to leader")
 
     def main(self):
         print(f'[node_id: {self.id}] Starting...')
@@ -247,12 +254,13 @@ class NodeServer():
 
             time.sleep(4)
 
+
             self.update_node_connections()
 
             if self.is_leader:
                 self.send_heartbeat()
             else:
-                if random.randint(0, 100) < 6:
+                if random.randint(0, 100) < 50:
                     self.retrain_model()
 
                 self.heartbeat_timer.increment()

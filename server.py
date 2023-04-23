@@ -99,8 +99,9 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     def DistributeModelWeights(self, request, context):
         print("distribute model weights!")
         
-        self.model.update_model(request.model_weights, request.model_version, request.num_model_data_points)
-        response = node_pb2.NodeResponse(
+        self.model.update_model([request.modelWeights], request.num_data_points)
+
+        response = node_pb2.ModelResponse(
             received=True,
         )
 

@@ -1,16 +1,16 @@
 import pandas as pd
 import numpy as np
-from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.neural_network import MLPClassifier
 
 class MachineLearning():
     def __init__(self):
-        all_data = pd.read_excel('diabetes.xlsx', header=None)
+        all_data = pd.read_csv('diabetes.csv', header=0)
 
         self.X = all_data.iloc[:, 0:8].to_numpy()
         print("len X = ", len(self.X))
-        print("X = ", self.X[0:12])
 
         self.y = all_data.iloc[:, 8].to_numpy()
 
@@ -22,7 +22,8 @@ class MachineLearning():
         self.num_nodes = num
 
     def baseline_reading(self):
-        total_accuracy = 0
+        nn_total_accuracy = 0
+        lr_total_accuracy = 0
         count = 0
 
         for i in range(0, 10):
@@ -35,18 +36,20 @@ class MachineLearning():
             # print("y test: ", y_test)
 
             # establish a baseline accuracy
-            clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
-            clf.fit(X_train, y_train)
-            y_pred = clf.predict(X_test)
-
-            accuracy = accuracy_score(y_test, y_pred)
-            total_accuracy += accuracy
+            nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
+            nn_clf.fit(X_train, y_train)
+            y_pred_nn = nn_clf.predict(X_test)
+            nn_accuracy = accuracy_score(y_test, y_pred_nn)
+            nn_total_accuracy += nn_accuracy
             count += 1
-    
-        print("total_accuracy = ", total_accuracy)
-        print("count = ", count)
 
-        print("avg. accuracy = ", (total_accuracy / count))
+            lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
+            y_pred_lr = lr_clf.predict(X_test)
+            lr_accuracy = accuracy_score(y_test, y_pred_lr)
+            lr_total_accuracy += lr_accuracy
+
+        print("nn avg. accuracy = ", (nn_total_accuracy / count))
+        print("lr avg. accuracy = ", (lr_total_accuracy / count))
 
     def split_data(self):
         # Set aside the testing set

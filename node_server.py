@@ -45,7 +45,7 @@ class NodeServer():
             if data == "leader":
                 self.is_leader = True
             elif data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
-                self.model.add_data(self.machine_learning.get_data_for_node(int(data)))
+                pass
             else:
                 sys.exit("Please specify if this node is a leader or not")
         else:
@@ -64,6 +64,7 @@ class NodeServer():
         else:
             print("not a leader!")
             self.set_defaults()
+            self.model.add_data(self.machine_learning.get_data_for_node(int(data)))
             self.connect_to_leader()
             time.sleep(2)
             self.register()
@@ -144,7 +145,7 @@ class NodeServer():
         active_nodes_version = self.active_nodes.get_version()
 
         model_weights, num_data_points = self.model.get_model()
-        model_request = node_pb2.ModelRequest(model_version=0, num_data_points=num_data_points, modelWeights=model_weights[0])
+        model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights[0])
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
         for node_id in active_ids:
             node = self.active_nodes.get_node(node_id)
@@ -232,7 +233,6 @@ class NodeServer():
     def end_session(self):
         self.deregister()
 
-
     def retrain_model(self):
         print("retrain model!")
         self.machine_learning.train_for_node(self.model)
@@ -247,15 +247,14 @@ class NodeServer():
 
             time.sleep(4)
 
-            #TODO: some random chance it retrains
-            if random.randint(0, 100) < 3:
-                self.retrain_model()
-
             self.update_node_connections()
 
             if self.is_leader:
                 self.send_heartbeat()
             else:
+                if random.randint(0, 100) < 6:
+                    self.retrain_model()
+
                 self.heartbeat_timer.increment()
                 if self.heartbeat_timer.expired():
                     self.heartbeat_expired()

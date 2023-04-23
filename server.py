@@ -64,8 +64,8 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
             self.active_nodes.set_version(request.active_nodes_version)
         
         # update own model with server model
-        if request.model:
-            print("received model = ", request.model)
+        if request.model and request.model.model_version != self.model.version:
+            print("new model version! time to update")
             self.model.update_model(request.model.modelWeights, request.model.num_data_points)        
 
         response = node_pb2.HeartbeatResponse(received=True)

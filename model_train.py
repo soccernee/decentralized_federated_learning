@@ -19,12 +19,7 @@ class MachineLearning():
 
         self.y = all_data.iloc[:, 8].to_numpy()
 
-        self.num_nodes = 5
-
         self.main()
-
-    def set_num_nodes(self, num):
-        self.num_nodes = num
 
     def baseline_reading(self):
         nn_total_accuracy = 0
@@ -106,59 +101,20 @@ class MachineLearning():
         return node_model
     
     def train_for_node(self, node_model):
-        #x, y = self.get_data_for_node(node_num)
         lr_clf = LogisticRegression(max_iter = 1000)
         lr_clf.coef_ = node_model.model_weights
-        #TODO: Add this logic
-        #node_model.num_model_data_points
+
+        orig_size = node_model.num_model_data_points
+        new_size = len(node_model.x_data)
+        orig_percentage = orig_size / (orig_size + new_size)
+        new_percentage = new_size / (orig_size + new_size)
+
         lr_clf.fit(node_model.x_data, node_model.y_data)
 
         new_weights = lr_clf.coef_
-        weights_merged = [(w1 * 95.0 + w2) / 100.0 for (w1, w2) in zip(node_model.model_weights, new_weights)]
+        weights_merged = [(w1 * orig_percentage + w2 * new_percentage) for (w1, w2) in zip(node_model.model_weights, new_weights)]
         node_model.update_model_weights(weights_merged, node_model.num_data_points + len(node_model.x_data))
         return node_model
-        
-
-    # initial code, function not be run
-    def parking_lot(self):
-        node_2 = pd.read_excel('diabetes_node_2.xlsx', header=None)
-        X_node_2 = node_2.iloc[:, 0:8].to_numpy()
-        y_node_2 = node_2.iloc[:, 8].to_numpy()
-
-        clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
-        clf.fit(X, y)
-        init_coefs = clf.coefs_
-
-        y_pred = clf.predict(X_test)
-
-        accuracy = accuracy_score(y_test, y_pred)
-        print("accuracy: ", accuracy)
-        # print(clf.predict([[2,	158,	90	,0,	0,	31.6,	0.805,	66]]))
-
-
-        clf_new = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
-        clf_new.coefs_ = init_coefs
-        clf_new.fit(X_node_2, y_node_2)
-
-        y_pred_new = clf_new.predict(X_test)
-        print(y_pred_new)
-        accuracy = accuracy_score(y_test, y_pred_new)
-        print(accuracy)
-        new_coefs = clf_new.coefs_
-        print(new_coefs[0])
-
-
-        weights_merged = [(w1 * 95.0 + w2) / 100.0 for (w1, w2) in zip(init_coefs, new_coefs)]
-
-
-        clf_merged = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), random_state=1, max_iter = 1000)
-        clf_merged.fit(X, y)
-        clf_merged.coefs_ = weights_merged
-        y_pred_merged = clf_merged.predict(X_test)
-        print("y_pred_merged: ", y_pred_merged)
-        accuracy = accuracy_score(y_test, y_pred_merged)
-        print(accuracy)
-
 
     def main(self):
         # self.baseline_reading()

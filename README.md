@@ -6,15 +6,15 @@ This is a project to demonstrate the principles of distributed computing. We are
 
 ## To-Do-List
 
-- [x] Nodes connect to Leader
+- [x] Nodes can connect to any node to find the leader
+- [x] Nodes registers with the Leader
 - [x] Leader connects to all (other) nodes
 - [x] Leader maintains list of active nodes
-- [x] Leader sends heartbeat to nodes (which includes active list of nodes)
-- [ ] Leader election if leader goes down
-- [ ] Base ML training per node
-- [ ] Nodes send updated model weights to Leader
-- [ ] Leader aggregates weights and pushes update to all nodes
-
+- [x] Leader sends heartbeat to nodes (which includes active list of nodes & model weights)
+- [x] Leader removes node from active list if heartbeat fails
+- [x] Leader election if leader goes down
+- [x] Base ML training per node
+- [x] Nodes send updated model weights to Leader
 
 ## Setup
 
@@ -31,12 +31,8 @@ This will automatically update the `node_pb2.py` and `node_pb2_grpc.py` files fo
 
 ## Deployment
 
-For the initial leader, run: `python node_server.py leader`. 
-For any other node, run: `python node_server.py`
-
-## Testing
-
-TODO
+For the initial leader, run: `python node_server.py leader`. It is important to perform this step first.
+For any other node, run: `python node_server.py <id>`. Example: `python node_server.py 3`
 
 ## Next Steps
 

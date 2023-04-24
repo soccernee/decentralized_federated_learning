@@ -92,13 +92,14 @@ class NodeServer():
         server.start()
         print("Servers started, listening... ")
         server.wait_for_termination()
-
+        
     #
     # Functions to perform when the node is not the leader
     #
     
     def check_if_open(self, host, port):
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(2)
         location = (host, port)
         result_of_check = a_socket.connect_ex(location)
 
@@ -122,6 +123,7 @@ class NodeServer():
             need_leader = self.check_if_open(host, port)
 
         #connect with alive node and ask who the leader is
+        print(f"Connecting to leader: ...")
         new_channel = grpc.insecure_channel('{}:{}'.format(host, port))
         temp_stub = node_pb2_grpc.NodeExchangeStub(new_channel)
         response = temp_stub.AskForLeader(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
@@ -164,8 +166,6 @@ class NodeServer():
 
         if highest_id:
             self.declare_leadership()
-        else:
-            time.sleep(4)
 
     #
     # Functions to perform when the Node is a leader
@@ -174,7 +174,7 @@ class NodeServer():
         active_ids = list(self.active_nodes.get_ids()).copy()
         active_nodes_version = self.active_nodes.get_version()
         print("function: send_heartbeat to nodes: ", active_ids)
-
+        print("current model accuracy: ", self.machine_learning.print_model_accuracy(self.model))
         model_weights, num_data_points = self.model.get_model()
         model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights)
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)

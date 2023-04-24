@@ -27,18 +27,27 @@ class MachineLearning():
 
     def print_model_accuracy(self, model):
         model_weights, num_data_points = model.get_model()
-        print("model_weights = ", model_weights)
-        print("num_data_points = ", num_data_points)
+        #print("model_weights = ", model_weights)
+        #print("num_data_points = ", num_data_points)
 
         # get the data from the model
-        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 2)
+        # print(X_test.shape)
+        # print(X_train.shape)
+        # print(y_test)
+        #print("MODEL WEIGHTS: ", np.array([np.array(model_weights)]))
+        lr_clf = LogisticRegression(max_iter=1)
+        lr_clf.coef_ = np.array([np.array(model_weights)])
+        lr_clf.intercept_ = np.array(-8.432321)
+        lr_clf.classes_ = np.array([0, 1])
+        #print(lr_clf.classes_)
 
-        lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
-        lr_clf.coef_ = model_weights
         y_pred_lr = lr_clf.predict(X_test)
+        #print(y_pred_lr)
         lr_accuracy = accuracy_score(y_test, y_pred_lr)
 
-        print("lr_accuracy = ", lr_accuracy)
+        #print("lr_accuracy = ", lr_accuracy)
+        return lr_accuracy
 
 
 
@@ -55,14 +64,15 @@ class MachineLearning():
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
 
             # establish a baseline accuracy
-            nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
-            nn_clf.fit(X_train, y_train)
-            y_pred_nn = nn_clf.predict(X_test)
-            nn_accuracy = accuracy_score(y_test, y_pred_nn)
-            nn_total_accuracy += nn_accuracy
-            count += 1
+            # nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
+            # nn_clf.fit(X_train, y_train)
+            # y_pred_nn = nn_clf.predict(X_test)
+            # nn_accuracy = accuracy_score(y_test, y_pred_nn)
+            # nn_total_accuracy += nn_accuracy
+            # count += 1
 
             lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
+            print(lr_clf.intercept_)
             y_pred_lr = lr_clf.predict(X_test)
             lr_accuracy = accuracy_score(y_test, y_pred_lr)
             lr_total_accuracy += lr_accuracy
@@ -137,7 +147,7 @@ class MachineLearning():
         return node_model
 
     def main(self):
-        # self.baseline_reading()
+        #self.baseline_reading()
 
         self.split_data()
 

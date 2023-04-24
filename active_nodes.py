@@ -28,17 +28,14 @@ class ActiveNodes():
         return ids
     
     def get_nodes(self):
-        print("[active_nodes] get_nodes")
         return self.active_nodes.values()
     
     def add_node(self, node_id, node):
-        print("[active_nodes] add_node")
         self.active_nodes[node_id] = node
         self.recent_additions.append(node_id)
         self.version += 1
 
     def remove_node(self, node_id):
-        print("[active_nodes] remove_node")
         self.active_nodes[node_id] = None
         # self.active_nodes.pop(node_id)
         self.recent_deletions.append(node_id)

@@ -25,7 +25,6 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         new_node = Node(request.id, request.ip_addr, request.port, True)
 
         self.active_nodes.add_node(request.id, new_node)
-        print("active_nodes = ", self.active_nodes.get_ids())
 
         response = node_pb2.NodeResponse(
             response_code=200,
@@ -45,7 +44,6 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         return response
     
     def Heartbeat(self, request, context):
-        print("heartbeat received")
         self.heartbeat_timer.refresh()
 
         # logic to add new nodes and remove old nodes to active_nodes
@@ -65,8 +63,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         
         # update own model with server model
         if request.model and request.model.model_version != self.model.version:
-            print("new model version! time to update")
-            print("modelWeights = ", request.model.modelWeights)
+            print("New model version! weights = ", request.model.modelWeights)
             self.model.update_model(request.model.modelWeights, request.model.num_data_points)        
 
         response = node_pb2.HeartbeatResponse(received=True)
@@ -74,7 +71,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     
     def DeclareLeadership(self, request, context):
         # accept the new leader
-        print("accept the new leader! ", request.id)
+        print("Accept the new leader! ", request.id)
 
         self.leader.set_id(request.id)
         self.leader.set_ip_addr(request.ip_addr)
@@ -103,10 +100,8 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         return response
     
     def AskForLeader(self, request, context):
-        print("AskForLeader")
-        print("self.leader = ", self.leader.port)
+        print(f'AskForLeader, response: {self.leader.ip_addr}:{self.leader.port}')
         if (self.leader.get_alive()):
-            print("leader is alive!")
             response = node_pb2.NodeResponse(
                 response_code=200,
                 leader_id=self.leader.id,

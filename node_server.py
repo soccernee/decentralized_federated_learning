@@ -57,10 +57,12 @@ class NodeServer():
         signal.signal(signal.SIGINT, self.signal_handler)
 
         if self.is_leader:
-            print("is leader!")
             leader = config.LEADERS[0]
             self.ip_addr = leader[0]
             self.port = leader[1]
+
+            print(f'Is the leader! {self.ip_addr}:{self.port}')
+
             self.node = Node(self.id, self.ip_addr, self.port, True)
             self.leader = self.node
             self.machine_learning.leader_train(self.model)
@@ -130,8 +132,6 @@ class NodeServer():
             print("Uh Oh, trouble with the Leader. Response = ", response)
 
         # connect with the leader
-        print("connecting with host: ", self.leader.ip_addr)
-        print("connecting with port: ", self.leader.port)
         channel = grpc.insecure_channel(
             '{}:{}'.format(self.leader.ip_addr, self.leader.port))
         self.leader_stub = node_pb2_grpc.NodeExchangeStub(channel)
@@ -139,7 +139,6 @@ class NodeServer():
     def register(self):
         print("register")
         response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
-        print("registration response = ", response)
         self.leader.set_alive(True)
 
     def deregister(self):
@@ -155,12 +154,10 @@ class NodeServer():
         for id in self.active_nodes.get_ids():
             if id == self.id:
                 continue
-            print("self > id? ", (self.id > id))
             if self.id < id:
                 highest_id = False
 
         # bug fix: if only one node in network, it should become the leader
-        print("len(self.active_nodes.get_ids()) = ", len(self.active_nodes.get_ids()))
         if len(self.active_nodes.get_ids()) == 1:
             print("I am the only one")
             highest_id = True
@@ -172,12 +169,11 @@ class NodeServer():
     # Functions to perform when the Node is a leader
     #
     def send_heartbeat(self):
-        print("function: send_heartbeat")
         active_ids = list(self.active_nodes.get_ids()).copy()
         active_nodes_version = self.active_nodes.get_version()
+        print("function: send_heartbeat to nodes: ", active_ids)
 
         model_weights, num_data_points = self.model.get_model()
-        print("send heartbeat, where model weights = ", model_weights)
         model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights)
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
         for node_id in active_ids:
@@ -257,8 +253,6 @@ class NodeServer():
         # remove removed nodes from removed additions list
         self.active_nodes.reset_removed_nodes()
 
-        print("after update, active_node_ids = ", self.active_nodes.get_ids())
-
     def signal_handler(self, signal, frame):
         print('\nYou quit the program!')
         self.end_session()
@@ -295,10 +289,8 @@ class NodeServer():
         print(f'[node_id: {self.id}] Starting...')
 
         while True:
-            print("in loop!")
             time.sleep(4)
-            
-            print("self.leader.get_new_leader_flag() = ", self.leader.get_new_leader_flag())
+
             if self.leader.get_new_leader_flag():
                 self.recognize_new_leadership()
 

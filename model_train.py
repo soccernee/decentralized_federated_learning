@@ -97,7 +97,6 @@ class MachineLearning():
         # Set aside the testing set
         (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 2)
 
-        print("len X = ", len(X_train))
         self.X_dict[1] = X_train[0:80]
         self.X_dict[2] = X_train[81:160]
         self.X_dict[3] = X_train[161:240]

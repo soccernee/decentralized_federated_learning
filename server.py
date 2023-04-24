@@ -75,8 +75,12 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     def DeclareLeadership(self, request, context):
         # accept the new leader
         print("accept the new leader! ", request.id)
-        self.leader = Node(request.id, request.ip_addr, request.port, True)
-        self.new_leader_flag = True
+
+        self.leader.set_id(request.id)
+        self.leader.set_ip_addr(request.ip_addr)
+        self.leader.set_port(request.port)
+        self.leader.set_alive(True)
+        self.leader.set_leader_flag(True)
 
         response = node_pb2.NodeResponse(
             response_code=200,

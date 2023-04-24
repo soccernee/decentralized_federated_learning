@@ -298,6 +298,7 @@ class NodeServer():
             print("in loop!")
             time.sleep(4)
             
+            print("self.leader.get_new_leader_flag() = ", self.leader.get_new_leader_flag())
             if self.leader.get_new_leader_flag():
                 self.recognize_new_leadership()
 

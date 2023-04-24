@@ -100,14 +100,12 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     
     def AskForLeader(self, request, context):
         print(f'AskForLeader, response: {self.leader.ip_addr}:{self.leader.port}')
-        if (self.leader.get_alive()):
-            response = node_pb2.NodeResponse(
-                response_code=200,
-                leader_id=self.leader.id,
-                leader_ip_addr=self.leader.ip_addr,
-                leader_port=self.leader.port
-            )
-            return response
-        else:
-            print("leader is not alive :/")
-            return {}
+        
+        response = node_pb2.NodeResponse(
+            response_code=200,
+            leader_id=self.leader.id,
+            leader_ip_addr=self.leader.ip_addr,
+            leader_port=self.leader.port
+        )
+        return response
+      

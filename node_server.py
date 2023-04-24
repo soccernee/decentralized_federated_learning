@@ -275,6 +275,11 @@ class NodeServer():
 
     def retrain_model(self):
         print("retrain model!")
+
+        if self.model.version == 0:
+            # do not retrain if node has not yet received model from leader
+            return
+
         self.machine_learning.train_for_node(self.model)
         if self.leader_stub:
             weights, num_model_data_points  = self.model.get_model()

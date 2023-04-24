@@ -164,6 +164,8 @@ class NodeServer():
 
         if highest_id:
             self.declare_leadership()
+        else:
+            time.sleep(4)
 
     #
     # Functions to perform when the Node is a leader

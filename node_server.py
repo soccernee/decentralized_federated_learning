@@ -191,9 +191,17 @@ class NodeServer():
             if node_id in self.stubs:
                 stub = self.stubs[node_id]
                 print("sending heartbeat to node = ", node_id)
-                response = stub.Heartbeat(heartbeat_request)
-                if response.received != True:
-                    print("received bad response from node = ", node_id)
+
+                try:
+                    response = stub.Heartbeat(heartbeat_request)
+                except grpc.RpcError as e:
+                    if isinstance(e, grpc._channel._InactiveRpcError):
+                        print("Node is not responding: ", node_id)
+                        self.active_nodes.remove_node(node_id)
+                        print(f'Removed node {node_id} from the active nodes list')
+                    else:
+                        # Handle other gRPC errors here
+                        print("some other gRPC error:", e)
 
     #
     # Functions all nodes perform
@@ -221,7 +229,7 @@ class NodeServer():
                 count_yes += 1
 
         if count_yes > (count_nodes / 2) or count_nodes == 0:
-            print("I AM THE LEADER")
+            print("I AM THE LEADER: ", self.id)
             self.is_leader = True
             self.leader_stub = None
 

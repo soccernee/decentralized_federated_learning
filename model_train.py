@@ -21,6 +21,9 @@ class MachineLearning():
 
         self.main()
 
+    # A function to help determine what our baseline accuracy is (without any
+    # distributed system and all of the data on a single machine) as well as 
+    # what ML model performs best
     def baseline_reading(self):
         nn_total_accuracy = 0
         lr_total_accuracy = 0
@@ -66,6 +69,11 @@ class MachineLearning():
         print("dt avg. accuracy = ", (dt_total_accuracy / count))
         print("rf avg. accuracy = ", (rf_total_accuracy / count))
         print("kn avg. accuracy = ", (kn_total_accuracy / count))
+        
+        #
+        # Turns out the Logistic Regression model consistently performed the best,
+        # so we we will be using that model for our federated learning network.
+        #
 
     def split_data(self):
         # Set aside the testing set

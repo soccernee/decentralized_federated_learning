@@ -8,15 +8,24 @@ class Node():
     @property
     def id(self):
         return self._id
+    
+    def set_id(self, id):
+        self._id = id
 
     @property
     def ip_addr(self):
         return self._ip_addr
+    
+    def set_ip_addr(self, ip_addr):
+        self._ip_addr = ip_addr
 
     @property
     def port(self):
         return self._port
     
+    def set_port(self, port):
+        self._port = port
+
     def get_alive(self):
         return self._alive
     

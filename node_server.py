@@ -37,7 +37,6 @@ class NodeServer():
         self.stubs = {}
         self.active_nodes = ActiveNodes()
         self.machine_learning = MachineLearning()
-        self.machine_learning.split_data()
         self.model = Model()
         self.heartbeat_timer = HeartbeatTimer()
 
@@ -46,7 +45,9 @@ class NodeServer():
             if data == "leader":
                 self.is_leader = True
             elif data == "1" or data == "2" or data == "3" or data == "4" or data == "5":
-                pass
+                node_info = config.LEADERS[int(data)] 
+                self.ip_addr = node_info[0]
+                self.port = node_info[1]
             else:
                 sys.exit("Please specify if this node is a leader or not")
         else:
@@ -76,17 +77,12 @@ class NodeServer():
         self.main()
 
     def set_defaults(self):
-        ip_addr = 'localhost'
-        print("ip_addr = ", ip_addr)
-
         self.is_leader = False
-        self.ip_addr = ip_addr 
-        self.port = 6188 + random.randint(0, 100)
         self.node = Node(self.id, self.ip_addr, self.port, True)
 
     def listen(self):
         str_port = str(self.port)
-        print("listening on port, ", str_port)
+        print(f'listening at {self.ip_addr}:{str_port}')
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
@@ -135,6 +131,8 @@ class NodeServer():
             print("Uh Oh, trouble with the Leader. Response = ", response)
 
         # connect with the leader
+        print("connecting with host: ", self.leader.ip_addr)
+        print("connecting with port: ", self.leader.port)
         channel = grpc.insecure_channel(
             '{}:{}'.format(self.leader.ip_addr, self.leader.port))
         self.leader_stub = node_pb2_grpc.NodeExchangeStub(channel)
@@ -220,6 +218,13 @@ class NodeServer():
             print("I AM THE LEADER")
             self.is_leader = True
             self.leader_stub = None
+
+            self.leader.set_id(self.id)
+            self.leader.set_ip_addr(self.ip_addr)
+            self.leader.set_port(self.port)
+            self.leader.set_alive(True)
+
+            print("self.leader.port = ", self.leader.port)
             self.active_nodes.remove_node(self.id)
             
     def recognize_new_leadership(self):
@@ -276,10 +281,10 @@ class NodeServer():
 
             try:
                 response = self.leader_stub.DistributeModelWeights(
-                    node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights[0]))
+                    node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights))
             except grpc.RpcError as e:
                 if isinstance(e, grpc._channel._InactiveRpcError):
-                    print("Connect with Leader closed unexpectedly!")
+                    print("Connect with Leader closed unexpectedly! error = ", e)
                     return
                 else:
                     # Handle other gRPC errors here

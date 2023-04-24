@@ -9,7 +9,7 @@ class Model():
     @property
     def version(self):
         return self._version
-    
+
     def update_model(self, model_weights, num_data_points):
         self.model_weights = model_weights
         self.num_model_data_points = num_data_points

@@ -92,7 +92,7 @@ class NodeServer():
         server.start()
         print("Servers started, listening... ")
         server.wait_for_termination()
-        
+
     #
     # Functions to perform when the node is not the leader
     #

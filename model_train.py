@@ -24,6 +24,24 @@ class MachineLearning():
     # A function to help determine what our baseline accuracy is (without any
     # distributed system and all of the data on a single machine) as well as 
     # what ML model performs best
+
+    def print_model_accuracy(self, model):
+        model_weights, num_data_points = model.get_model()
+        print("model_weights = ", model_weights)
+        print("num_data_points = ", num_data_points)
+
+        # get the data from the model
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
+
+        lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
+        lr_clf.coef_ = model_weights
+        y_pred_lr = lr_clf.predict(X_test)
+        lr_accuracy = accuracy_score(y_test, y_pred_lr)
+
+        print("lr_accuracy = ", lr_accuracy)
+
+
+
     def baseline_reading(self):
         nn_total_accuracy = 0
         lr_total_accuracy = 0

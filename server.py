@@ -1,3 +1,4 @@
+from model_train import MachineLearning
 import node_pb2
 import node_pb2_grpc
 
@@ -94,6 +95,8 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         response = node_pb2.ModelResponse(
             received=True,
         )
+        
+        MachineLearning().print_model_accuracy(self.model)
 
         return response
     

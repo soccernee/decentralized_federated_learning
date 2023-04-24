@@ -32,10 +32,7 @@ class MachineLearning():
 
         # get the data from the model
         (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 2)
-        # print(X_test.shape)
-        # print(X_train.shape)
-        # print(y_test)
-        #print("MODEL WEIGHTS: ", np.array([np.array(model_weights)]))
+
         lr_clf = LogisticRegression(max_iter=1)
         lr_clf.coef_ = np.array([np.array(model_weights)])
         lr_clf.intercept_ = np.array(-8.432321)
@@ -63,13 +60,13 @@ class MachineLearning():
             # Set aside the testing set
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
 
-            # establish a baseline accuracy
-            # nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
-            # nn_clf.fit(X_train, y_train)
-            # y_pred_nn = nn_clf.predict(X_test)
-            # nn_accuracy = accuracy_score(y_test, y_pred_nn)
-            # nn_total_accuracy += nn_accuracy
-            # count += 1
+            #establish a baseline accuracy
+            nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
+            nn_clf.fit(X_train, y_train)
+            y_pred_nn = nn_clf.predict(X_test)
+            nn_accuracy = accuracy_score(y_test, y_pred_nn)
+            nn_total_accuracy += nn_accuracy
+            count += 1
 
             lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
             print(lr_clf.intercept_)

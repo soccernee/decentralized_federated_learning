@@ -174,8 +174,11 @@ class NodeServer():
         active_ids = list(self.active_nodes.get_ids()).copy()
         active_nodes_version = self.active_nodes.get_version()
         print("function: send_heartbeat to nodes: ", active_ids)
-        print("current model accuracy: ", self.machine_learning.print_model_accuracy(self.model))
+        
+
         model_weights, num_data_points = self.model.get_model()
+
+
         model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights)
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
         for node_id in active_ids:
@@ -195,6 +198,12 @@ class NodeServer():
     #
     # Functions all nodes perform
     #
+
+    def print_model_accuracy(self):
+        if self.model.new_data:
+            print("current model accuracy: ", self.machine_learning.print_model_accuracy(self.model))
+            self.model.set_new_data(False)
+        
 
     def declare_leadership(self):
         count_nodes = 0
@@ -273,7 +282,7 @@ class NodeServer():
 
             try:
                 response = self.leader_stub.DistributeModelWeights(
-                    node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights))
+                    node_pb2.ModelRequest(model_version=self.model._version + 1, num_data_points=num_model_data_points, modelWeights=weights))
             except grpc.RpcError as e:
                 if isinstance(e, grpc._channel._InactiveRpcError):
                     print("Connect with Leader closed unexpectedly! error = ", e)
@@ -300,6 +309,7 @@ class NodeServer():
 
             if self.is_leader:
                 self.send_heartbeat()
+                self.print_model_accuracy()
             else:
                 if random.randint(0, 100) < 20:
                     self.retrain_model()

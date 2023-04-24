@@ -33,7 +33,6 @@ class NodeServer():
 
         self.id = str(uuid.uuid4())
         self.leader_stub = None
-        self.new_leader_flag = False # used by the gRPC to signal new leadership
         self.stubs = {}
         self.active_nodes = ActiveNodes()
         self.machine_learning = MachineLearning()
@@ -86,7 +85,7 @@ class NodeServer():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
-            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.new_leader_flag, self.model), server)
+            NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.model), server)
         server.add_insecure_port('[::]:' + str_port)
         server.start()
         print("Servers started, listening... ")
@@ -231,12 +230,9 @@ class NodeServer():
         print("recognize new leadership")
         self.leader_stub = self.stubs[self.leader.id]
         self.stubs.pop(self.leader.id)
-
-        self.new_leader_flag = False # reset to False
+        self.leader.set_leader_flag(False) # reset to False
 
     def update_node_connections(self):
-        print("update node connections")
-
         # connect to any new nodes
         for node_id in self.active_nodes.new_nodes():
             if node_id != self.id and not (node_id in self.stubs):
@@ -300,11 +296,10 @@ class NodeServer():
 
         while True:
             print("in loop!")
-            if self.new_leader_flag:
-                self.recognize_new_leadership()
-
             time.sleep(4)
-
+            
+            if self.leader.get_new_leader_flag():
+                self.recognize_new_leadership()
 
             self.update_node_connections()
 

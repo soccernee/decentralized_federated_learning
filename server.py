@@ -10,14 +10,13 @@ from node import Node
 #
 
 class NodeExchange(node_pb2_grpc.NodeExchange):
-    def __init__(self, node, active_nodes, heartbeat_timer, leader, new_leader_flag, model):
+    def __init__(self, node, active_nodes, heartbeat_timer, leader, model):
         self.id = node.id
         self.ip_addr = node.ip_addr
         self.port = node.port
         self.active_nodes = active_nodes
         self.heartbeat_timer = heartbeat_timer
         self.leader = leader
-        self.new_leader_flag = new_leader_flag
         self.model = model
 
     def RegisterNode(self, request, context):
@@ -95,8 +94,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         response = node_pb2.ModelResponse(
             received=True,
         )
-        
-        MachineLearning().print_model_accuracy(self.model)
+        # MachineLearning().print_model_accuracy(self.model)
 
         return response
     

@@ -4,6 +4,7 @@ class Node():
         self._ip_addr = ip_addr
         self._port = port
         self._alive = alive
+        self.new_leader_flag = False
 
     @property
     def id(self):
@@ -25,6 +26,12 @@ class Node():
     
     def set_port(self, port):
         self._port = port
+
+    def get_new_leader_flag(self):
+        return self.new_leader_flag
+    
+    def set_leader_flag(self, val):
+        self.new_leader_flag = val
 
     def get_alive(self):
         return self._alive

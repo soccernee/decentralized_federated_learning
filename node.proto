@@ -15,6 +15,7 @@ service NodeExchange {
 
   // actions from the node to the other nodes
   rpc DeclareLeadership (NodeRequest) returns (NodeResponse) {}
+  rpc AskForLeader (NodeRequest) returns (NodeResponse) {}
 }
 
 message NodeRequest {

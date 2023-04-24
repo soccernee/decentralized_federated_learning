@@ -46,6 +46,11 @@ class NodeExchangeStub(object):
                 request_serializer=node__pb2.NodeRequest.SerializeToString,
                 response_deserializer=node__pb2.NodeResponse.FromString,
                 )
+        self.AskForLeader = channel.unary_unary(
+                '/NodeExchange/AskForLeader',
+                request_serializer=node__pb2.NodeRequest.SerializeToString,
+                response_deserializer=node__pb2.NodeResponse.FromString,
+                )
 
 
 class NodeExchangeServicer(object):
@@ -92,6 +97,12 @@ class NodeExchangeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AskForLeader(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NodeExchangeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -122,6 +133,11 @@ def add_NodeExchangeServicer_to_server(servicer, server):
             ),
             'DeclareLeadership': grpc.unary_unary_rpc_method_handler(
                     servicer.DeclareLeadership,
+                    request_deserializer=node__pb2.NodeRequest.FromString,
+                    response_serializer=node__pb2.NodeResponse.SerializeToString,
+            ),
+            'AskForLeader': grpc.unary_unary_rpc_method_handler(
+                    servicer.AskForLeader,
                     request_deserializer=node__pb2.NodeRequest.FromString,
                     response_serializer=node__pb2.NodeResponse.SerializeToString,
             ),
@@ -234,6 +250,23 @@ class NodeExchange(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/NodeExchange/DeclareLeadership',
+            node__pb2.NodeRequest.SerializeToString,
+            node__pb2.NodeResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AskForLeader(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NodeExchange/AskForLeader',
             node__pb2.NodeRequest.SerializeToString,
             node__pb2.NodeResponse.FromString,
             options, channel_credentials,

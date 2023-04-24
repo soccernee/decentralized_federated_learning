@@ -32,11 +32,6 @@ class MachineLearning():
         for i in range(0, 20):
             # Set aside the testing set
             (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3)
-            
-            # print("X train: ", X_train)
-            # print("y train: ", y_train)
-            # print("X test: ", X_test)
-            # print("y test: ", y_test)
 
             # establish a baseline accuracy
             nn_clf = MLPClassifier(solver='adam',activation='relu', alpha=1e-6, hidden_layer_sizes=(8, 8), max_iter = 1000)
@@ -96,7 +91,7 @@ class MachineLearning():
     
     def leader_train(self, node_model):
         lr_clf = LogisticRegression(max_iter = 1000).fit(self.X_leader, self.y_leader)
-        node_model.update_model(lr_clf.coef_, len(self.X_leader))
+        node_model.update_model(list(lr_clf.coef_[0]), len(self.X_leader))
         print("~~ all done training leader ~~")
         return node_model
     
@@ -111,7 +106,7 @@ class MachineLearning():
 
         lr_clf.fit(node_model.x_data, node_model.y_data)
 
-        new_weights = lr_clf.coef_
+        new_weights = list(lr_clf.coef_[0])
         weights_merged = [(w1 * orig_percentage + w2 * new_percentage) for (w1, w2) in zip(node_model.model_weights, new_weights)]
         node_model.update_model(weights_merged, node_model.num_model_data_points + len(node_model.x_data))
         return node_model

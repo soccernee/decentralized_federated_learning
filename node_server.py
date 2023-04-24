@@ -3,6 +3,7 @@ import grpc
 import random
 import _thread
 import time
+import socket
 import signal
 import sys
 import uuid
@@ -57,9 +58,11 @@ class NodeServer():
 
         if self.is_leader:
             print("is leader!")
-            self.ip_addr = config.LEADER_HOST
-            self.port = config.LEADER_PORT
+            leader = config.LEADERS[0]
+            self.ip_addr = leader[0]
+            self.port = leader[1]
             self.node = Node(self.id, self.ip_addr, self.port, True)
+            self.leader = self.node
             self.machine_learning.leader_train(self.model)
         else:
             print("not a leader!")
@@ -75,12 +78,11 @@ class NodeServer():
     def set_defaults(self):
         ip_addr = 'localhost'
         print("ip_addr = ", ip_addr)
-        
+
         self.is_leader = False
         self.ip_addr = ip_addr 
         self.port = 6188 + random.randint(0, 100)
         self.node = Node(self.id, self.ip_addr, self.port, True)
-        self.leader = Node('0', config.LEADER_HOST, config.LEADER_PORT, False)
 
     def listen(self):
         str_port = str(self.port)
@@ -97,13 +99,44 @@ class NodeServer():
     #
     # Functions to perform when the node is not the leader
     #
+    
+    def check_if_open(self, host, port):
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        location = (host, port)
+        result_of_check = a_socket.connect_ex(location)
+
+        if result_of_check == 0:
+            print("Port is open")
+        else:
+            print("Port is not open")
+        a_socket.close()
+        return result_of_check
 
     def connect_to_leader(self):
         print("Connect to Leader")
-        # register with the leader
+
+        need_leader = True
+        node_count = -1
+        while need_leader and node_count < len(config.LEADERS):
+            node_count += 1
+            host = config.LEADERS[node_count][0]
+            port = config.LEADERS[node_count][1]
+            print(f'Trying to connect to node: {host}:{port}')
+            need_leader = self.check_if_open(host, port)
+
+        #connect with alive node and ask who the leader is
+        new_channel = grpc.insecure_channel('{}:{}'.format(host, port))
+        temp_stub = node_pb2_grpc.NodeExchangeStub(new_channel)
+        response = temp_stub.AskForLeader(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
+        if response.response_code == 200:
+            print("Found the leader: ", response)
+            self.leader = Node('0', response.leader_ip_addr, response.leader_port, False)
+        else:
+            print("Uh Oh, trouble with the Leader. Response = ", response)
+
+        # connect with the leader
         channel = grpc.insecure_channel(
             '{}:{}'.format(self.leader.ip_addr, self.leader.port))
-        
         self.leader_stub = node_pb2_grpc.NodeExchangeStub(channel)
 
     def register(self):
@@ -111,13 +144,11 @@ class NodeServer():
         response = self.leader_stub.RegisterNode(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
         print("registration response = ", response)
         self.leader.set_alive(True)
-        # self.heartbeat_timer.start()
 
     def deregister(self):
         print("deregister")
         if not self.is_leader:
             self.leader_stub.DeregisterNode(node_pb2.NodeRequest(id=self.id, ip_addr=self.ip_addr, port=self.port))
-            # self.heartbeat_timer.stop()
 
     def heartbeat_expired(self):
         print("heartbeat_expired!!!!!!!!!!")
@@ -131,6 +162,12 @@ class NodeServer():
             if self.id < id:
                 highest_id = False
 
+        # bug fix: if only one node in network, it should become the leader
+        print("len(self.active_nodes.get_ids()) = ", len(self.active_nodes.get_ids()))
+        if len(self.active_nodes.get_ids()) == 1:
+            print("I am the only one")
+            highest_id = True
+
         if highest_id:
             self.declare_leadership()
 
@@ -143,7 +180,8 @@ class NodeServer():
         active_nodes_version = self.active_nodes.get_version()
 
         model_weights, num_data_points = self.model.get_model()
-        model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights[0])
+        print("send heartbeat, where model weights = ", model_weights)
+        model_request = node_pb2.ModelRequest(model_version=self.model.version, num_data_points=num_data_points, modelWeights=model_weights)
         heartbeat_request = node_pb2.HeartbeatRequest(active_nodes_version=active_nodes_version, model=model_request)
         for node_id in active_ids:
             node = self.active_nodes.get_node(node_id)
@@ -178,7 +216,7 @@ class NodeServer():
             if response.response_code == 200:
                 count_yes += 1
 
-        if count_yes > (count_nodes / 2):
+        if count_yes > (count_nodes / 2) or count_nodes == 0:
             print("I AM THE LEADER")
             self.is_leader = True
             self.leader_stub = None
@@ -235,7 +273,19 @@ class NodeServer():
         if self.leader_stub:
             weights, num_model_data_points  = self.model.get_model()
             print(weights)
-            response = self.leader_stub.DistributeModelWeights(node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights[0]))
+
+            try:
+                response = self.leader_stub.DistributeModelWeights(
+                    node_pb2.ModelRequest(model_version=0, num_data_points=num_model_data_points, modelWeights=weights[0]))
+            except grpc.RpcError as e:
+                if isinstance(e, grpc._channel._InactiveRpcError):
+                    print("Connect with Leader closed unexpectedly!")
+                    return
+                else:
+                    # Handle other gRPC errors here
+                    print("some other gRPC error:", e)
+                    return
+
             print("response sending updated weights = ", response)
         else:
             print("Failed to send updated model to leader")
@@ -256,7 +306,7 @@ class NodeServer():
             if self.is_leader:
                 self.send_heartbeat()
             else:
-                if random.randint(0, 100) < 50:
+                if random.randint(0, 100) < 20:
                     self.retrain_model()
 
                 self.heartbeat_timer.increment()

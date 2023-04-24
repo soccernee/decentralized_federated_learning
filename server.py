@@ -66,6 +66,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         # update own model with server model
         if request.model and request.model.model_version != self.model.version:
             print("new model version! time to update")
+            print("modelWeights = ", request.model.modelWeights)
             self.model.update_model(request.model.modelWeights, request.model.num_data_points)        
 
         response = node_pb2.HeartbeatResponse(received=True)
@@ -88,10 +89,21 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     def DistributeModelWeights(self, request, context):
         print("distribute model weights!")
         
-        self.model.update_model([request.modelWeights], request.num_data_points)
+        self.model.update_model(request.modelWeights, request.num_data_points)
 
         response = node_pb2.ModelResponse(
             received=True,
         )
 
+        return response
+    
+    def AskForLeader(self, request, context):
+        print("AskForLeader")
+        print("self.leader = ", self.leader)
+        response = node_pb2.NodeResponse(
+            response_code=200,
+            leader_id=self.leader.id,
+            leader_ip_addr=self.leader.ip_addr,
+            leader_port=self.leader.port
+        )
         return response

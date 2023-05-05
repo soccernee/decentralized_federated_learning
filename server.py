@@ -17,6 +17,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         self.active_nodes = active_nodes
         self.heartbeat_timer = heartbeat_timer
         self.leader = leader
+        self.new_leader_flag = False
         self.model = model
 
     def RegisterNode(self, request, context):
@@ -25,6 +26,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         new_node = Node(request.id, request.ip_addr, request.port, True)
 
         self.active_nodes.add_node(request.id, new_node)
+        print("active_nodes = ", self.active_nodes.get_ids())
 
         response = node_pb2.NodeResponse(
             response_code=200,
@@ -44,6 +46,7 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         return response
     
     def Heartbeat(self, request, context):
+        print("heartbeat received")
         self.heartbeat_timer.refresh()
 
         # logic to add new nodes and remove old nodes to active_nodes
@@ -63,7 +66,8 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
         
         # update own model with server model
         if request.model and request.model.model_version != self.model.version:
-            print("New model version! weights = ", request.model.modelWeights)
+            print("new model version! time to update")
+            print("modelWeights = ", request.model.modelWeights)
             self.model.update_model(request.model.modelWeights, request.model.num_data_points)        
 
         response = node_pb2.HeartbeatResponse(received=True)
@@ -71,13 +75,9 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     
     def DeclareLeadership(self, request, context):
         # accept the new leader
-        print("Accept the new leader! ", request.id)
-
-        self.leader.set_id(request.id)
-        self.leader.set_ip_addr(request.ip_addr)
-        self.leader.set_port(request.port)
-        self.leader.set_alive(True)
-        self.leader.set_leader_flag(True)
+        print("accept the new leader! ", request.id)
+        self.leader = Node(request.id, request.ip_addr, request.port, True)
+        self.new_leader_flag = True
 
         response = node_pb2.NodeResponse(
             response_code=200,
@@ -89,23 +89,27 @@ class NodeExchange(node_pb2_grpc.NodeExchange):
     
     def DistributeModelWeights(self, request, context):
         print("distribute model weights!")
-        
+        print("modelWeights = ", request.modelWeights)
         self.model.update_model(request.modelWeights, request.num_data_points)
 
         response = node_pb2.ModelResponse(
             received=True,
         )
-
+        
         return response
     
     def AskForLeader(self, request, context):
-        print(f'AskForLeader, response: {self.leader.ip_addr}:{self.leader.port}')
-        
-        response = node_pb2.NodeResponse(
-            response_code=200,
-            leader_id=self.leader.id,
-            leader_ip_addr=self.leader.ip_addr,
-            leader_port=self.leader.port
-        )
-        return response
-      
+        print("AskForLeader")
+        print("self.leader = ", self.leader.port)
+        if (self.leader.get_alive()):
+            print("leader is alive!")
+            response = node_pb2.NodeResponse(
+                response_code=200,
+                leader_id=self.leader.id,
+                leader_ip_addr=self.leader.ip_addr,
+                leader_port=self.leader.port
+            )
+            return response
+        else:
+            print("leader is not alive :/")
+            return {}

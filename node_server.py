@@ -38,6 +38,7 @@ class NodeServer():
         self.machine_learning = MachineLearning()
         self.model = Model()
         self.heartbeat_timer = HeartbeatTimer()
+        self.model_accuracy_list = []
 
         if len(sys.argv) > 1:
             data = str(sys.argv[1])
@@ -86,6 +87,8 @@ class NodeServer():
         print(f'listening at {self.ip_addr}:{str_port}')
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        print("Server created")
+        print(self.model)
         node_pb2_grpc.add_NodeExchangeServicer_to_server(
             NodeExchange(self.node, self.active_nodes, self.heartbeat_timer, self.leader, self.model), server)
         server.add_insecure_port('[::]:' + str_port)
@@ -209,7 +212,10 @@ class NodeServer():
 
     def print_model_accuracy(self):
         if self.model.new_data:
-            print("current model accuracy: ", self.machine_learning.print_model_accuracy(self.model))
+            model_accuracy = self.machine_learning.print_model_accuracy(self.model)
+            print("current model accuracy: ", model_accuracy)
+            self.model_accuracy_list.append(model_accuracy)
+            print("model accuracy list: ", self.model_accuracy_list)
             self.model.set_new_data(False)
         
 

@@ -31,7 +31,7 @@ class MachineLearning():
         #print("num_data_points = ", num_data_points)
 
         # get the data from the model
-        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 2)
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 4)
 
         lr_clf = LogisticRegression(max_iter=1)
         lr_clf.coef_ = np.array([np.array(model_weights)])
@@ -69,7 +69,6 @@ class MachineLearning():
             count += 1
 
             lr_clf = LogisticRegression(max_iter = 1000).fit(X_train, y_train)
-            print(lr_clf.intercept_)
             y_pred_lr = lr_clf.predict(X_test)
             lr_accuracy = accuracy_score(y_test, y_pred_lr)
             lr_total_accuracy += lr_accuracy
@@ -102,7 +101,7 @@ class MachineLearning():
 
     def split_data(self):
         # Set aside the testing set
-        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 2)
+        (X_train, X_test, y_train, y_test) = train_test_split(self.X, self.y, test_size = .3, random_state= 4)
 
         self.X_dict[1] = X_train[0:80]
         self.X_dict[2] = X_train[81:160]
@@ -144,7 +143,7 @@ class MachineLearning():
         return node_model
 
     def main(self):
-        #self.baseline_reading()
+        self.baseline_reading()
 
         self.split_data()
 
